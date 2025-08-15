@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ThemeToggle } from "@/components/theme-toggle";
+import LogoutButton from "@/app/(app)/logout-button";
 
 const NAV = [
   { href: "/dashboard", label: "Dashboard" },
@@ -40,6 +41,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <header className="flex items-center justify-between border-b p-4">
           <div />
           <ThemeToggle />
+          <LogoutButton />
         </header>
         <main className="p-6">{children}</main>
       </div>
