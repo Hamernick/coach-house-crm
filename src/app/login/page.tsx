@@ -1,65 +1,57 @@
+"use client";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { useRouter, useSearchParams } from "next/navigation";
+import { createSupabaseBrowser } from "@/utils/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [busy, setBusy] = useState(false);
   const router = useRouter();
-  const supabase = createClientComponentClient();
+  const sp = useSearchParams();
+  const redirect = sp.get("redirect") || "/dashboard";
+  const supabase = createSupabaseBrowser();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  async function magic(e: React.FormEvent) {
     e.preventDefault();
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    setBusy(true);
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: { emailRedirectTo: `${location.origin}${redirect}` },
+    });
+    setBusy(false);
+    if (error) return alert(error.message);
+    alert("Check your email for the magic link.");
+  }
 
-    if (error) {
-      alert(error.message);
-    } else {
-      router.push("/dashboard");
-    }
-  };
+  async function github() {
+    await supabase.auth.signInWithOAuth({
+      provider: "github",
+      options: { redirectTo: `${location.origin}${redirect}` },
+    });
+  }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <form onSubmit={handleSubmit} className="max-w-md w-full space-y-4 p-8 rounded-lg shadow-lg">
-        <h2 className="text-center text-2xl font-bold">Login</h2>
-        <div>
-          <label htmlFor="email" className="block text-sm font-medium leading-6 text-gray-900">
-            Email
-          </label>
-          <input
-            id="email"
-            name="email"
-            type="email"
-            autoComplete="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="mt-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-          />
-        </div>
-        <div>
-          <label htmlFor="password" className="block text-sm font-medium leading-6 text-gray-900">
-            Password
-          </label>
-          <input
-            id="password"
-            name="password"
-            type="password"
-            autoComplete="current-password"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="mt-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-          />
-        </div>
-        <button
-          type="submit"
-          className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-        >
-          Sign in
-        </button>
+    <div className="max-w-md mx-auto p-8">
+      <h1 className="text-2xl font-semibold mb-4">Log in</h1>
+      <form onSubmit={magic} className="grid gap-3">
+        <Input
+          type="email"
+          placeholder="you@example.com"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+        <Button disabled={busy} type="submit">
+          {busy ? "Sending..." : "Send magic link"}
+        </Button>
       </form>
+      <div className="mt-6">
+        <Button variant="secondary" onClick={github}>
+          Continue with GitHub
+        </Button>
+      </div>
     </div>
   );
 }
