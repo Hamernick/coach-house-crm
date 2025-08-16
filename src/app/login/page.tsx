@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createSupabaseBrowser } from "@/utils/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import LoginForm from "@/components/login-form"; // Placeholder for the custom login form
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -35,18 +35,15 @@ export default function LoginPage() {
   return (
     <div className="max-w-md mx-auto p-8">
       <h1 className="text-2xl font-semibold mb-4">Log in</h1>
-      <form onSubmit={magic} className="grid gap-3">
-        <Input
-          type="email"
-          placeholder="you@example.com"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        <Button disabled={busy} type="submit">
-          {busy ? "Sending..." : "Send magic link"}
-        </Button>
-      </form>
+      <LoginForm
+        email={email}
+        setEmail={setEmail}
+        busy={busy}
+        setBusy={setBusy}
+        router={router}
+        redirect={redirect}
+        supabase={supabase}
+      />
       <div className="mt-6">
         <Button variant="secondary" onClick={github}>
           Continue with GitHub
