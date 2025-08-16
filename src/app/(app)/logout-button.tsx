@@ -1,18 +1,17 @@
-import { createSupabaseBrowser } from "@supabase/auth-helpers-nextjs";
+﻿"use client";
 import { useRouter } from "next/navigation";
+import { createSupabaseBrowser } from "@/utils/supabase/client";
+import { Button } from "@/components/ui/button";
 
 export default function LogoutButton() {
   const router = useRouter();
   const supabase = createSupabaseBrowser();
 
-  const handleLogout = async () => {
+  const onClick = async () => {
     await supabase.auth.signOut();
-    router.push("/login");
+    router.replace("/login");
+    router.refresh();
   };
 
-  return (
-    <button onClick={handleLogout} className="text-sm underline">
-      Logout
-    </button>
-  );
+  return <Button variant="ghost" onClick={onClick}>Log out</Button>;
 }
