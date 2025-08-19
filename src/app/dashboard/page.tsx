@@ -6,7 +6,7 @@ import { ChartAreaInteractive } from "@/components/chart-area-interactive"
 export default function DashboardPage() {
   return (
     <SidebarInset>
-      <SiteHeader />
+      <SiteHeader title="Dashboard" />
       <div className="space-y-4 p-4">
         <SectionCards />
         <ChartAreaInteractive />

@@ -4,7 +4,7 @@ import { SiteHeader } from "@/components/site-header"
 export default function ContactsPage() {
   return (
     <SidebarInset>
-      <SiteHeader />
+      <SiteHeader title="Contacts" />
       <div className="p-4">
         <h1 className="text-2xl font-bold">Contacts</h1>
       </div>

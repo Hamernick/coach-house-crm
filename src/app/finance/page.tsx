@@ -4,7 +4,7 @@ import { SiteHeader } from "@/components/site-header"
 export default function FinancePage() {
   return (
     <SidebarInset>
-      <SiteHeader />
+      <SiteHeader title="Finance" />
       <div className="p-4">
         <h1 className="text-2xl font-bold">Finance</h1>
       </div>
