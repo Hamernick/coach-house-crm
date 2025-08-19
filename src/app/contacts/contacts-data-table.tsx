@@ -224,6 +224,15 @@ export function ContactsDataTable({ data }: ContactsDataTableProps) {
         ),
       },
       {
+        accessorKey: "documents",
+        header: "Documents",
+        cell: ({ row }) => {
+          const docs = row.original.documents?.length ?? 0
+          return <span>{docs}</span>
+        },
+        meta: { label: "Documents" },
+      },
+      {
         id: "actions",
         cell: ({ row }) => (
           <RowActions
@@ -314,6 +323,9 @@ export function ContactsDataTable({ data }: ContactsDataTableProps) {
                 .getAllColumns()
                 .filter((column) => column.getCanHide())
                 .map((column) => {
+                  const label =
+                    (column.columnDef.meta as { label?: string } | undefined)
+                      ?.label ?? column.id
                   return (
                     <DropdownMenuCheckboxItem
                       key={column.id}
@@ -321,7 +333,7 @@ export function ContactsDataTable({ data }: ContactsDataTableProps) {
                       checked={column.getIsVisible()}
                       onCheckedChange={(value) => column.toggleVisibility(!!value)}
                     >
-                      {column.id}
+                      {label}
                     </DropdownMenuCheckboxItem>
                   )
                 })}
