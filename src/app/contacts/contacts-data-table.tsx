@@ -13,13 +13,11 @@ import {
   getSortedRowModel,
   useReactTable,
   Row,
-  Header,
 } from "@tanstack/react-table"
 import { DndContext, DragEndEvent } from "@dnd-kit/core"
 import {
   SortableContext,
   verticalListSortingStrategy,
-  horizontalListSortingStrategy,
   arrayMove,
   useSortable,
 } from "@dnd-kit/sortable"
@@ -34,14 +32,10 @@ import {
   ChevronRight,
   ChevronsRight,
   MoreVertical,
-  Search,
-  Calendar as CalendarIcon,
-  Upload,
 } from "lucide-react"
 import { toast } from "sonner"
-import { useForm, useFieldArray, Controller } from "react-hook-form"
+import { useForm, useFieldArray } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { format } from "date-fns"
 
 import { useIsMobile } from "@/hooks/use-mobile"
 import { contactSchema, type Contact } from "./data"
@@ -86,7 +80,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { Calendar } from "@/components/ui/calendar"
 
 interface ContactsDataTableProps {
   data: Contact[]
@@ -177,16 +170,6 @@ export function ContactsDataTable({ data }: ContactsDataTableProps) {
         enableHiding: false,
       },
       {
-        accessorKey: "honorific",
-        header: "Honorific",
-        meta: { label: "Honorific" },
-      },
-      {
-        accessorKey: "pronouns",
-        header: "Pronouns",
-        meta: { label: "Pronouns" },
-      },
-      {
         accessorKey: "firstName",
         header: ({ column }) => (
           <Button
@@ -197,48 +180,26 @@ export function ContactsDataTable({ data }: ContactsDataTableProps) {
             <ChevronsUpDown className="ml-2 h-4 w-4" />
           </Button>
         ),
-        cell: ({ row }) => (
-          <Button variant="link" onClick={() => openDrawer(row.original)}>
-            {row.original.firstName}
+        cell: ({ row }) => {
+          const c = row.original
+          return (
+            <Button variant="link" onClick={() => openDrawer(c)}>
+              {`${c.firstName} ${c.lastName ?? ""}`.trim()}
+            </Button>
+          )
+        },
+      },
+      {
+        accessorKey: "primaryEmail",
+        header: ({ column }) => (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Email
+            <ChevronsUpDown className="ml-2 h-4 w-4" />
           </Button>
         ),
-        meta: { label: "First Name" },
-      },
-      {
-        accessorKey: "middleName",
-        header: "Middle Name",
-        meta: { label: "Middle Name" },
-      },
-      {
-        accessorKey: "lastName",
-        header: "Last Name",
-        meta: { label: "Last Name" },
-      },
-      {
-        accessorKey: "aliases",
-        header: "Aliases",
-        meta: { label: "Aliases" },
-      },
-      {
-        accessorKey: "howToCreditPublicly",
-        header: "Credit",
-        meta: { label: "How to Credit Publicly" },
-      },
-      {
-        accessorKey: "type",
-        header: "Type",
-        meta: { label: "Type" },
-      },
-      {
-        accessorKey: "roles",
-        header: "Roles",
-        cell: ({ row }) => row.original.roles?.join(", "),
-        meta: { label: "Roles" },
-      },
-      {
-        accessorKey: "jobTitle",
-        header: "Job Title",
-        meta: { label: "Job Title" },
       },
       {
         accessorKey: "company",
@@ -251,52 +212,16 @@ export function ContactsDataTable({ data }: ContactsDataTableProps) {
         meta: { label: "Primary Email" },
       },
       {
-        accessorKey: "alternateEmails",
-        header: "Alternate Emails",
-        cell: ({ row }) => row.original.alternateEmails?.join(", "),
-        meta: { label: "Alternate Emails" },
-      },
-      {
-        accessorKey: "website",
-        header: "Website",
-        meta: { label: "Website" },
-      },
-      {
-        accessorKey: "socialMedia",
-        header: "Social Media",
-        meta: { label: "Social Media" },
-      },
-      {
-        accessorKey: "primaryAddress",
-        header: "Address",
-        cell: ({ row }) => {
-          const addr = row.original.primaryAddress
-          return addr ? `${addr.city}, ${addr.state}` : ""
-        },
-        meta: { label: "Primary Address" },
-      },
-      {
-        accessorKey: "phoneNumbers",
-        header: "Phone Numbers",
-        cell: ({ row }) => row.original.phoneNumbers?.join(", "),
-        meta: { label: "Phone Numbers" },
-      },
-      {
-        accessorKey: "dateOfBirth",
-        header: "Date of Birth",
-        meta: { label: "Date of Birth" },
-      },
-      {
-        accessorKey: "mailingLists",
-        header: "Mailing Lists",
-        cell: ({ row }) => row.original.mailingLists?.join(", "),
-        meta: { label: "Mailing Lists" },
-      },
-      {
-        accessorKey: "doNotEmail",
-        header: "Do Not Email",
-        cell: ({ row }) => (row.original.doNotEmail ? "Yes" : "No"),
-        meta: { label: "Do Not Email" },
+        accessorKey: "type",
+        header: ({ column }) => (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Type
+            <ChevronsUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        ),
       },
       {
         id: "actions",
@@ -368,17 +293,14 @@ export function ContactsDataTable({ data }: ContactsDataTableProps) {
   return (
     <div>
       <div className="flex items-center py-4">
-        <div className="relative max-w-sm">
-          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search contacts"
-            value={(table.getColumn("firstName")?.getFilterValue() as string) ?? ""}
-            onChange={(event) =>
-              table.getColumn("firstName")?.setFilterValue(event.target.value)
-            }
-            className="pl-8"
-          />
-        </div>
+        <Input
+          placeholder="Filter contacts..."
+          value={(table.getColumn("firstName")?.getFilterValue() as string) ?? ""}
+          onChange={(event) =>
+            table.getColumn("firstName")?.setFilterValue(event.target.value)
+          }
+          className="max-w-sm"
+        />
         <div className="ml-auto flex items-center space-x-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -399,7 +321,7 @@ export function ContactsDataTable({ data }: ContactsDataTableProps) {
                       checked={column.getIsVisible()}
                       onCheckedChange={(value) => column.toggleVisibility(!!value)}
                     >
-                      {(column.columnDef.meta as { label?: string })?.label ?? column.id}
+                      {column.id}
                     </DropdownMenuCheckboxItem>
                   )
                 })}
@@ -721,7 +643,6 @@ function ContactDrawer({ open, onOpenChange, contact, onSave }: ContactDrawerPro
   const roles = ["Donor", "Volunteer", "Board"]
   const pronounOptions = ["He/Him", "She/Her", "They/Them", "Other"]
   const mailingListOptions = ["Newsletter", "Events", "Volunteers"]
-  const fileInputRef = React.useRef<HTMLInputElement | null>(null)
 
   const onSubmit = handleSubmit((values: Contact) => {
     onSave(values)
@@ -737,264 +658,151 @@ function ContactDrawer({ open, onOpenChange, contact, onSave }: ContactDrawerPro
         <form
           id="contact-form"
           onSubmit={onSubmit}
-          className="overflow-y-auto px-4 pb-4 space-y-6"
+          className="overflow-y-auto px-4 pb-4 space-y-4"
         >
-          <section className="space-y-4">
-            <h3 className="text-lg font-semibold">Basic Info</h3>
-            <div className="grid grid-cols-2 gap-2">
-              <Select
-                value={watch("pronouns")}
-                onValueChange={(v) => setValue("pronouns", v as Contact["pronouns"])}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Pronouns" />
-                </SelectTrigger>
-                <SelectContent>
-                  {pronounOptions.map((p) => (
-                    <SelectItem key={p} value={p}>
-                      {p}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Input placeholder="Honorific" {...register("honorific")} />
-            </div>
-            <div className="grid gap-2">
-              <Input placeholder="First Name" {...register("firstName")} />
-              <Input placeholder="Middle Name" {...register("middleName")} />
-              <Input placeholder="Last Name" {...register("lastName")} />
-              <Input placeholder="Aliases" {...register("aliases")} />
-              <Input
-                placeholder="How to Credit Publicly"
-                {...register("howToCreditPublicly")}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Type</Label>
-              <div className="flex flex-wrap gap-2">
-                {contactSchema.shape.type.options.map((opt) => (
-                  <Button
-                    key={opt}
-                    type="button"
-                    variant={watch("type") === opt ? "default" : "outline"}
-                    onClick={() => setValue("type", opt)}
-                  >
-                    {opt}
-                  </Button>
-                ))}
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label>Roles</Label>
-              {roles.map((role) => (
-                <div key={role} className="flex items-center space-x-2">
-                  <Checkbox
-                    checked={watch("roles")?.includes(role)}
-                    onCheckedChange={(checked) => {
-                      const currentRoles = watch("roles") ?? []
-                      if (checked) {
-                        setValue("roles", [...currentRoles, role])
-                      } else {
-                        setValue(
-                          "roles",
-                          currentRoles.filter((r) => r !== role)
-                        )
-                      }
-                    }}
-                  />
-                  <span>{role}</span>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          <section className="space-y-4">
-            <h3 className="text-lg font-semibold">Contact Info</h3>
-            <div className="grid gap-2">
-              <Input placeholder="Job Title" {...register("jobTitle")} />
-              <Input
-                placeholder="Company / Organization Name"
-                {...register("company")}
-              />
-            </div>
-          </section>
-
-          <section className="space-y-4">
-            <h3 className="text-lg font-semibold">Communication</h3>
-            <div className="grid gap-2">
-              <Input
-                placeholder="Primary Email"
-                {...register("primaryEmail")}
-              />
-              {altEmailFields.map((field, index) => (
-                <div key={field.id} className="flex space-x-2">
-                  <Input
-                    className="flex-1"
-                    placeholder="Alternate Email"
-                    {...register(`alternateEmails.${index}` as const)}
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    onClick={() => removeEmail(index)}
-                  >
-                    Remove
-                  </Button>
-                </div>
-              ))}
-              {altEmailFields.length < 2 && (
+          <div className="space-y-2">
+            <Label>Type</Label>
+            <div className="flex flex-wrap gap-2">
+              {contactSchema.shape.type.options.map((opt) => (
                 <Button
+                  key={opt}
                   type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => appendEmail("")}
+                  variant={watch("type") === opt ? "default" : "outline"}
+                  onClick={() => setValue("type", opt)}
                 >
-                  Add another email
+                  {opt}
                 </Button>
-              )}
-              <Input placeholder="Website" {...register("website")} />
-              <Input placeholder="Social Media" {...register("socialMedia")} />
-            </div>
-          </section>
-
-          <section className="space-y-4">
-            <h3 className="text-lg font-semibold">Address</h3>
-            <div className="grid gap-2">
-              <Select
-                value={watch("primaryAddress.country")}
-                onValueChange={(v) =>
-                  setValue("primaryAddress.country", v)
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Country" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="USA">USA</SelectItem>
-                  <SelectItem value="Canada">Canada</SelectItem>
-                </SelectContent>
-              </Select>
-              <Input
-                placeholder="Street Address"
-                {...register("primaryAddress.street")}
-              />
-              <Input placeholder="City" {...register("primaryAddress.city")} />
-              <Select
-                value={watch("primaryAddress.state")}
-                onValueChange={(v) => setValue("primaryAddress.state", v)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="State" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="NY">NY</SelectItem>
-                  <SelectItem value="CA">CA</SelectItem>
-                </SelectContent>
-              </Select>
-              <Input placeholder="Zip" {...register("primaryAddress.zip")} />
-            </div>
-          </section>
-
-          <section className="space-y-4">
-            <h3 className="text-lg font-semibold">Phone Numbers</h3>
-            <div className="grid gap-2">
-              {phoneFields.map((field, index) => (
-                <div key={field.id} className="flex space-x-2">
-                  <Input
-                    className="flex-1"
-                    placeholder="Phone Number"
-                    {...register(`phoneNumbers.${index}` as const)}
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    onClick={() => removePhone(index)}
-                  >
-                    Remove
-                  </Button>
-                </div>
               ))}
-              {phoneFields.length < 3 && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => appendPhone("")}
-                >
-                  Add phone number
-                </Button>
-              )}
             </div>
-          </section>
-
-          <section className="space-y-4">
-            <h3 className="text-lg font-semibold">Other Personal Info</h3>
-            <Controller
-              name="dateOfBirth"
-              control={control}
-              render={({ field }) => (
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className="justify-start text-left font-normal"
-                    >
-                      {field.value ? format(new Date(field.value), "PPP") : (
-                        <span>Pick a date</span>
-                      )}
-                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={field.value ? new Date(field.value) : undefined}
-                      onSelect={(date) =>
-                        field.onChange(
-                          date ? date.toISOString().split("T")[0] : ""
-                        )
-                      }
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-              )}
-            />
-          </section>
-
-          <section className="space-y-4">
-            <h3 className="text-lg font-semibold">Documents</h3>
-            <Controller
-              name="documents"
-              control={control}
-              render={({ field }) => (
-                <div
-                  className="border-2 border-dashed rounded-md p-4 text-center cursor-pointer"
-                  onDragOver={(e) => e.preventDefault()}
-                  onDrop={(e) => {
-                    e.preventDefault()
-                    const files = Array.from(e.dataTransfer.files)
-                    field.onChange(files)
+          </div>
+          <div className="space-y-2">
+            <Label>Roles</Label>
+            {roles.map((role) => (
+              <div key={role} className="flex items-center space-x-2">
+                <Checkbox
+                  checked={watch("roles")?.includes(role)}
+                  onCheckedChange={(checked) => {
+                    const currentRoles = watch("roles") ?? []
+                    if (checked) {
+                      setValue("roles", [...currentRoles, role])
+                    } else {
+                      setValue(
+                        "roles",
+                        currentRoles.filter((r) => r !== role)
+                      )
+                    }
                   }}
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  <Upload className="mx-auto h-6 w-6" />
-                  <p className="mt-2 text-sm font-medium">Drop files here</p>
-                  <p className="text-xs text-muted-foreground">or click to browse</p>
-                  <input
-                    type="file"
-                    multiple
-                    ref={fileInputRef}
-                    className="hidden"
-                    onChange={(e) => field.onChange(Array.from(e.target.files ?? []))}
-                  />
-                </div>
-              )}
+                />
+                <span>{role}</span>
+              </div>
+            ))}
+          </div>
+          <div className="grid gap-2">
+            <Input placeholder="Honorific" {...register("honorific")} />
+            <Input placeholder="First Name" {...register("firstName")} />
+            <Input placeholder="Middle Name" {...register("middleName")} />
+            <Input placeholder="Last Name" {...register("lastName")} />
+            <Input placeholder="Aliases" {...register("aliases")} />
+            <Input
+              placeholder="How to Credit Publicly"
+              {...register("howToCreditPublicly")}
             />
-          </section>
-
-          <section className="space-y-2">
-            <h3 className="text-lg font-semibold">Mailing Lists</h3>
+            <Select
+              value={watch("pronouns")}
+              onValueChange={(v) => setValue("pronouns", v as Contact["pronouns"])}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Pronouns" />
+              </SelectTrigger>
+              <SelectContent>
+                {pronounOptions.map((p) => (
+                  <SelectItem key={p} value={p}>
+                    {p}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Input placeholder="Job Title" {...register("jobTitle")} />
+            <Input
+              placeholder="Company / Organization Name"
+              {...register("company")}
+            />
+          </div>
+          <div className="grid gap-2">
+            <Input
+              placeholder="Primary Email"
+              {...register("primaryEmail")}
+            />
+            {altEmailFields.map((field, index) => (
+              <div key={field.id} className="flex space-x-2">
+                <Input
+                  className="flex-1"
+                  placeholder="Alternate Email"
+                  {...register(`alternateEmails.${index}` as const)}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => removeEmail(index)}
+                >
+                  Remove
+                </Button>
+              </div>
+            ))}
+            {altEmailFields.length < 2 && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => appendEmail("")}
+              >
+                Add another email
+              </Button>
+            )}
+            <Input placeholder="Website" {...register("website")} />
+            <Input
+              placeholder="Social Media"
+              {...register("socialMedia")}
+            />
+          </div>
+          <div className="grid gap-2">
+            {phoneFields.map((field, index) => (
+              <div key={field.id} className="flex space-x-2">
+                <Input
+                  className="flex-1"
+                  placeholder="Phone Number"
+                  {...register(`phoneNumbers.${index}` as const)}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => removePhone(index)}
+                >
+                  Remove
+                </Button>
+              </div>
+            ))}
+            {phoneFields.length < 3 && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => appendPhone("")}
+              >
+                Add phone number
+              </Button>
+            )}
+          </div>
+          <div className="grid gap-2">
+            <Input
+              type="date"
+              placeholder="Date of Birth"
+              {...register("dateOfBirth")}
+            />
+            <Input type="file" {...register("documents")} multiple />
+          </div>
+          <div className="space-y-2">
+            <Label>Mailing Lists</Label>
             {mailingListOptions.map((list) => (
               <div key={list} className="flex items-center space-x-2">
                 <Checkbox
@@ -1015,9 +823,9 @@ function ContactDrawer({ open, onOpenChange, contact, onSave }: ContactDrawerPro
               </div>
             ))}
             <div className="flex items-center space-x-2">
-              <Checkbox {...register("doNotEmail")} /> <span>Do not email</span>
+              <Checkbox {...register("doNotEmail")}/> <span>Do not email</span>
             </div>
-          </section>
+          </div>
         </form>
         <DrawerFooter className="border-t p-4">
           <Button type="submit" form="contact-form">
