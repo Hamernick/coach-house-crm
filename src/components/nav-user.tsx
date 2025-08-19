@@ -1,5 +1,7 @@
+// src/components/nav-user.tsx
 "use client"
 
+import React, { useCallback, useState } from "react"
 import {
   IconCreditCard,
   IconDotsVertical,
@@ -8,11 +10,7 @@ import {
   IconUserCircle,
 } from "@tabler/icons-react"
 
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/components/ui/avatar"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -48,11 +46,11 @@ export function NavUser({
   const router = useRouter()
   const supabase = createSupabaseBrowser()
 
-  const [accountOpen, setAccountOpen] = React.useState(false)
-  const [billingOpen, setBillingOpen] = React.useState(false)
-  const [settingsOpen, setSettingsOpen] = React.useState(false)
+  const [accountOpen, setAccountOpen] = useState(false)
+  const [billingOpen, setBillingOpen] = useState(false)
+  const [settingsOpen, setSettingsOpen] = useState(false)
 
-  const handleLogout = React.useCallback(async () => {
+  const handleLogout = useCallback(async () => {
     await supabase.auth.signOut()
     router.replace("/")
     router.refresh()
@@ -70,7 +68,7 @@ export function NavUser({
               >
                 <Avatar className="h-8 w-8 rounded-lg grayscale">
                   <AvatarImage src={user.avatar} alt={user.name} />
-                  <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                  <AvatarFallback className="rounded-lg">CH</AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">{user.name}</span>
@@ -82,7 +80,7 @@ export function NavUser({
               </SidebarMenuButton>
             </DropdownMenuTrigger>
             <DropdownMenuContent
-              className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
+              className="min-w-56 w-[--radix-dropdown-menu-trigger-width] rounded-lg"
               side={isMobile ? "bottom" : "right"}
               align="end"
               sideOffset={4}
@@ -125,6 +123,7 @@ export function NavUser({
           </DropdownMenu>
         </SidebarMenuItem>
       </SidebarMenu>
+
       <AccountDialog open={accountOpen} onOpenChange={setAccountOpen} />
       <BillingDialog open={billingOpen} onOpenChange={setBillingOpen} />
       <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
