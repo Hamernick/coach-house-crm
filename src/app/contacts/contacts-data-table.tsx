@@ -91,6 +91,7 @@ export function ContactsDataTable({ data }: ContactsDataTableProps) {
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = React.useState({})
+  const [columnOrder, setColumnOrder] = React.useState<string[]>([])
   const [drawerOpen, setDrawerOpen] = React.useState(false)
   const [current, setCurrent] = React.useState<Contact | null>(null)
 
@@ -175,7 +176,7 @@ export function ContactsDataTable({ data }: ContactsDataTableProps) {
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
-            Name
+            First Name
             <ChevronsUpDown className="ml-2 h-4 w-4" />
           </Button>
         ),
@@ -202,15 +203,13 @@ export function ContactsDataTable({ data }: ContactsDataTableProps) {
       },
       {
         accessorKey: "company",
-        header: ({ column }) => (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            Company
-            <ChevronsUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        ),
+        header: "Company",
+        meta: { label: "Company" },
+      },
+      {
+        accessorKey: "primaryEmail",
+        header: "Primary Email",
+        meta: { label: "Primary Email" },
       },
       {
         accessorKey: "type",
@@ -233,10 +232,15 @@ export function ContactsDataTable({ data }: ContactsDataTableProps) {
             onDelete={() => deleteContact(row.original.id)}
           />
         ),
+        enableHiding: false,
       },
     ],
     [openDrawer, deleteContact]
   )
+
+  React.useEffect(() => {
+    setColumnOrder(columns.map((c) => c.id!))
+  }, [columns])
 
   const table = useReactTable({
     data: contacts,
@@ -246,17 +250,30 @@ export function ContactsDataTable({ data }: ContactsDataTableProps) {
       columnFilters,
       columnVisibility,
       rowSelection,
+      columnOrder,
     },
     enableRowSelection: true,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
+    onColumnOrderChange: setColumnOrder,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
   })
+
+  const handleColumnDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event
+    if (active.id !== over?.id) {
+      setColumnOrder((cols) => {
+        const oldIndex = cols.indexOf(active.id as string)
+        const newIndex = cols.indexOf(over?.id as string)
+        return arrayMove(cols, oldIndex, newIndex)
+      })
+    }
+  }
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event
@@ -349,18 +366,34 @@ export function ContactsDataTable({ data }: ContactsDataTableProps) {
             <Table>
               <TableHeader>
                 {table.getHeaderGroups().map((headerGroup) => (
-                  <TableRow key={headerGroup.id}>
-                    {headerGroup.headers.map((header) => (
-                      <TableHead key={header.id}>
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext()
-                            )}
-                      </TableHead>
-                    ))}
-                  </TableRow>
+                  <DndContext key={headerGroup.id} onDragEnd={handleColumnDragEnd}>
+                    <SortableContext
+                      items={columnOrder.filter(
+                        (id) =>
+                          !["select", "drag", "actions"].includes(id) &&
+                          table.getColumn(id)?.getIsVisible()
+                      )}
+                      strategy={horizontalListSortingStrategy}
+                    >
+                      <TableRow className="bg-muted">
+                        {headerGroup.headers.map((header) => {
+                          const id = header.column.id
+                          return ["select", "drag", "actions"].includes(id) ? (
+                            <TableHead key={header.id}>
+                              {header.isPlaceholder
+                                ? null
+                                : flexRender(
+                                    header.column.columnDef.header,
+                                    header.getContext()
+                                  )}
+                            </TableHead>
+                          ) : (
+                            <DraggableColumnHeader key={header.id} header={header} />
+                          )
+                        })}
+                      </TableRow>
+                    </SortableContext>
+                  </DndContext>
                 ))}
               </TableHeader>
               <TableBody>
@@ -479,6 +512,32 @@ function RowActions({ onView, onEdit, onDelete }: RowActionsProps) {
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
+  )
+}
+
+interface DraggableColumnHeaderProps {
+  header: Header<Contact, unknown>
+}
+
+function DraggableColumnHeader({ header }: DraggableColumnHeaderProps) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
+    useSortable({ id: header.column.id })
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  }
+  return (
+    <TableHead
+      ref={setNodeRef}
+      style={style}
+      className={isDragging ? "opacity-50" : ""}
+      {...attributes}
+      {...listeners}
+    >
+      {header.isPlaceholder
+        ? null
+        : flexRender(header.column.columnDef.header, header.getContext())}
+    </TableHead>
   )
 }
 
