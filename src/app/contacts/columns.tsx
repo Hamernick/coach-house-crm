@@ -1,7 +1,8 @@
+// src/app/contacts/columns.tsx
 "use client"
 
 import { ColumnDef } from "@tanstack/react-table"
-import { IconChevronsUpDown, IconDotsVertical } from "@tabler/icons-react"
+import { ChevronsUpDown, MoreVertical } from "lucide-react"
 
 import { Checkbox } from "@/components/ui/checkbox"
 import { Button } from "@/components/ui/button"
@@ -12,7 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
-import { Contact } from "./data"
+import type { Contact } from "./data"
 
 export const columns: ColumnDef<Contact>[] = [
   {
@@ -45,7 +46,7 @@ export const columns: ColumnDef<Contact>[] = [
         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
       >
         Name
-        <IconChevronsUpDown className="ml-2 h-4 w-4" />
+        <ChevronsUpDown className="ml-2 h-4 w-4" />
       </Button>
     ),
   },
@@ -57,7 +58,7 @@ export const columns: ColumnDef<Contact>[] = [
         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
       >
         Email
-        <IconChevronsUpDown className="ml-2 h-4 w-4" />
+        <ChevronsUpDown className="ml-2 h-4 w-4" />
       </Button>
     ),
   },
@@ -69,7 +70,7 @@ export const columns: ColumnDef<Contact>[] = [
         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
       >
         Status
-        <IconChevronsUpDown className="ml-2 h-4 w-4" />
+        <ChevronsUpDown className="ml-2 h-4 w-4" />
       </Button>
     ),
   },
@@ -80,7 +81,7 @@ export const columns: ColumnDef<Contact>[] = [
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="h-8 w-8 p-0">
-            <IconDotsVertical className="h-4 w-4" />
+            <MoreVertical className="h-4 w-4" />
             <span className="sr-only">Open menu</span>
           </Button>
         </DropdownMenuTrigger>
@@ -92,4 +93,3 @@ export const columns: ColumnDef<Contact>[] = [
     ),
   },
 ]
-
