@@ -1,6 +1,6 @@
 ﻿"use client";
 import { useRouter } from "next/navigation";
-import { createSupabaseBrowser } from "@/utils/supabase/client";
+import { createSupabaseBrowser } from "@/utils";
 import { Button } from "@/components/ui/button";
 
 export default function LogoutButton() {
