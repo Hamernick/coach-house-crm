@@ -1,4 +1,5 @@
 import "./globals.css"
+import React from "react"
 import type { Metadata } from "next"
 import { ThemeProvider } from "@/components/theme-provider"
 import { LayoutWrapper } from "@/components/layout-wrapper"
