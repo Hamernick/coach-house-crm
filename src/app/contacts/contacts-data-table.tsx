@@ -12,30 +12,49 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
-  type Row,
+  Row,
 } from "@tanstack/react-table"
 import { DndContext, DragEndEvent } from "@dnd-kit/core"
 import {
   SortableContext,
-  arrayMove,
   verticalListSortingStrategy,
+  arrayMove,
   useSortable,
 } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
-import { ChevronsUpDown, GripVertical, MoreVertical } from "lucide-react"
+import {
+  ChevronsUpDown,
+  GripVertical,
+  Columns as ColumnsIcon,
+  Plus,
+  ChevronsLeft,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsRight,
+  MoreVertical,
+} from "lucide-react"
 import { toast } from "sonner"
+import { useForm, useFieldArray } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+
+import { useIsMobile } from "@/hooks/use-mobile"
+import { contactSchema, type Contact } from "./data"
 
 import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
+import { Checkbox } from "@/components/ui/checkbox"
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 import {
   Drawer,
   DrawerContent,
@@ -52,6 +71,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { Label } from "@/components/ui/label"
 import {
   Table,
   TableBody,
@@ -60,9 +80,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { useIsMobile } from "@/hooks/use-mobile"
-
-import { contactSchema, type Contact } from "./data"
 
 interface ContactsDataTableProps {
   data: Contact[]
@@ -77,7 +94,19 @@ export function ContactsDataTable({ data }: ContactsDataTableProps) {
   const [drawerOpen, setDrawerOpen] = React.useState(false)
   const [current, setCurrent] = React.useState<Contact | null>(null)
 
-  const isMobile = useIsMobile()
+  const createEmptyContact = React.useCallback((): Contact => ({
+    id: Date.now().toString(),
+    type: "Individual",
+    roles: [],
+    firstName: "",
+    middleName: "",
+    lastName: "",
+    primaryEmail: "",
+    alternateEmails: [],
+    phoneNumbers: [""],
+    mailingLists: [],
+    doNotEmail: false,
+  }), [])
 
   const openDrawer = React.useCallback((contact: Contact) => {
     setCurrent(contact)
@@ -86,51 +115,23 @@ export function ContactsDataTable({ data }: ContactsDataTableProps) {
 
   const saveContact = (contact: Contact) => {
     const promise = new Promise((resolve) => {
-      setContacts((prev) =>
-        prev.map((c) => (c.id === contact.id ? contact : c))
-      )
+      setContacts((prev) => {
+        const index = prev.findIndex((c) => c.id === contact.id)
+        if (index !== -1) {
+          const updated = [...prev]
+          updated[index] = contact
+          return updated
+        }
+        return [...prev, contact]
+      })
       setTimeout(resolve, 500)
     })
     toast.promise(promise, {
       loading: "Saving contact...",
-      success: "Contact updated!",
-      error: "Error saving.",
+      success: "Contact saved!",
+      error: "Error saving contact",
     })
   }
-
-  const handleStatusChange = React.useCallback(
-    (id: string, value: Contact["status"]) => {
-      const promise = new Promise((resolve) => {
-        setContacts((prev) =>
-          prev.map((c) => (c.id === id ? { ...c, status: value } : c))
-        )
-        setTimeout(resolve, 500)
-      })
-      toast.promise(promise, {
-        loading: "Saving contact...",
-        success: "Contact updated!",
-        error: "Error saving.",
-      })
-    },
-    []
-  )
-
-  const handleAssignedChange = React.useCallback(
-    (id: string, value: string) => {
-      const promise = new Promise((resolve) => {
-        setContacts((prev) =>
-          prev.map((c) => (c.id === id ? { ...c, assignedTo: value } : c))
-        )
-        setTimeout(resolve, 500)
-      })
-      toast.promise(promise, {
-        loading: "Saving contact...",
-        success: "Contact updated!",
-        error: "Error saving.",
-      })
-    },
-    []
-  )
 
   const deleteContact = React.useCallback((id: string) => {
     setContacts((prev) => prev.filter((c) => c.id !== id))
@@ -168,7 +169,7 @@ export function ContactsDataTable({ data }: ContactsDataTableProps) {
         enableHiding: false,
       },
       {
-        accessorKey: "name",
+        accessorKey: "firstName",
         header: ({ column }) => (
           <Button
             variant="ghost"
@@ -178,32 +179,23 @@ export function ContactsDataTable({ data }: ContactsDataTableProps) {
             <ChevronsUpDown className="ml-2 h-4 w-4" />
           </Button>
         ),
-        cell: ({ row, getValue }) => (
-          <Button variant="link" onClick={() => openDrawer(row.original)}>
-            {getValue() as string}
-          </Button>
-        ),
+        cell: ({ row }) => {
+          const c = row.original
+          return (
+            <Button variant="link" onClick={() => openDrawer(c)}>
+              {`${c.firstName} ${c.lastName ?? ""}`.trim()}
+            </Button>
+          )
+        },
       },
       {
-        accessorKey: "email",
+        accessorKey: "primaryEmail",
         header: ({ column }) => (
           <Button
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
             Email
-            <ChevronsUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        ),
-      },
-      {
-        accessorKey: "jobTitle",
-        header: ({ column }) => (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            Job Title
             <ChevronsUpDown className="ml-2 h-4 w-4" />
           </Button>
         ),
@@ -221,67 +213,29 @@ export function ContactsDataTable({ data }: ContactsDataTableProps) {
         ),
       },
       {
-        accessorKey: "status",
-        header: "Status",
-        cell: ({ row }) => (
-          <Select
-            value={row.getValue("status") as string}
-            onValueChange={(value) =>
-              handleStatusChange(row.original.id, value as Contact["status"])
-            }
+        accessorKey: "type",
+        header: ({ column }) => (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
-            <SelectTrigger className="w-[150px]">
-              <SelectValue placeholder="Status" />
-            </SelectTrigger>
-            <SelectContent>
-              {contactSchema.shape.status.options.map((status) => (
-                <SelectItem key={status} value={status}>
-                  {status}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            Type
+            <ChevronsUpDown className="ml-2 h-4 w-4" />
+          </Button>
         ),
-      },
-      {
-        accessorKey: "assignedTo",
-        header: "Assigned To",
-        cell: ({ row }) => {
-          const members = ["Sam", "Jane", "Mike", "Sara"]
-          return (
-            <Select
-              value={row.getValue("assignedTo") as string}
-              onValueChange={(value) =>
-                handleAssignedChange(row.original.id, value)
-              }
-            >
-              <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder="Assign" />
-              </SelectTrigger>
-              <SelectContent>
-                {members.map((m) => (
-                  <SelectItem key={m} value={m}>
-                    {m}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )
-        },
       },
       {
         id: "actions",
         cell: ({ row }) => (
-          <RowActionsMenu
+          <RowActions
             onView={() => openDrawer(row.original)}
             onEdit={() => openDrawer(row.original)}
-            onEmail={() => toast("Email sent!")}
             onDelete={() => deleteContact(row.original.id)}
           />
         ),
       },
     ],
-    [handleAssignedChange, handleStatusChange, openDrawer, deleteContact]
+    [openDrawer, deleteContact]
   )
 
   const table = useReactTable({
@@ -315,41 +269,76 @@ export function ContactsDataTable({ data }: ContactsDataTableProps) {
     }
   }
 
+  const handleAddNew = () => {
+    openDrawer(createEmptyContact())
+  }
+
   return (
     <div>
       <div className="flex items-center py-4">
         <Input
           placeholder="Filter contacts..."
-          value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
+          value={(table.getColumn("firstName")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
-            table.getColumn("name")?.setFilterValue(event.target.value)
+            table.getColumn("firstName")?.setFilterValue(event.target.value)
           }
           className="max-w-sm"
         />
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="ml-auto">
-              Columns
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {table
-              .getAllColumns()
-              .filter((column) => column.getCanHide())
-              .map((column) => {
-                return (
-                  <DropdownMenuCheckboxItem
-                    key={column.id}
-                    className="capitalize"
-                    checked={column.getIsVisible()}
-                    onCheckedChange={(value) => column.toggleVisibility(!!value)}
-                  >
-                    {column.id}
-                  </DropdownMenuCheckboxItem>
-                )
-              })}
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <div className="ml-auto flex items-center space-x-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline">
+                <ColumnsIcon className="mr-2 h-4 w-4" />
+                Customize Columns
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {table
+                .getAllColumns()
+                .filter((column) => column.getCanHide())
+                .map((column) => {
+                  return (
+                    <DropdownMenuCheckboxItem
+                      key={column.id}
+                      className="capitalize"
+                      checked={column.getIsVisible()}
+                      onCheckedChange={(value) => column.toggleVisibility(!!value)}
+                    >
+                      {column.id}
+                    </DropdownMenuCheckboxItem>
+                  )
+                })}
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button>
+                <Plus className="mr-2 h-4 w-4" /> Add
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent align="end" className="w-48">
+              <div className="flex flex-col">
+                <Button variant="ghost" className="justify-start" onClick={handleAddNew}>
+                  Add New Contact
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="justify-start"
+                  onClick={() => toast("Upload not implemented")}
+                >
+                  Upload .csv
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="justify-start"
+                  onClick={() => toast("Download not implemented")}
+                >
+                  Download .csv
+                </Button>
+              </div>
+            </PopoverContent>
+          </Popover>
+        </div>
       </div>
       <div className="rounded-md border">
         <DndContext onDragEnd={handleDragEnd}>
@@ -391,129 +380,89 @@ export function ContactsDataTable({ data }: ContactsDataTableProps) {
           </SortableContext>
         </DndContext>
       </div>
-      <div className="flex items-center justify-between space-x-2 py-4">
+      <div className="flex items-center py-4">
         <div className="flex-1 text-sm text-muted-foreground">
           {table.getFilteredSelectedRowModel().rows.length} of {" "}
           {table.getFilteredRowModel().rows.length} row(s) selected.
         </div>
-        <div className="space-x-2">
+        <div className="flex-1 flex items-center justify-center space-x-2">
+          <span className="text-sm">Rows per page</span>
+          <Select
+            value={table.getState().pagination.pageSize.toString()}
+            onValueChange={(value) => table.setPageSize(Number(value))}
+          >
+            <SelectTrigger className="h-8 w-[70px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent side="top">
+              {[10, 20, 50, 100].map((size) => (
+                <SelectItem key={size} value={size.toString()}>
+                  {size}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="flex-1 flex items-center justify-end space-x-2">
           <Button
             variant="outline"
-            size="sm"
-            onClick={() => table.previousPage()}
+            size="icon"
+            onClick={() => table.setPageIndex(0)}
             disabled={!table.getCanPreviousPage()}
           >
-            Previous
+            <ChevronsLeft className="h-4 w-4" />
           </Button>
           <Button
             variant="outline"
-            size="sm"
+            size="icon"
+            onClick={() => table.previousPage()}
+            disabled={!table.getCanPreviousPage()}
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <span className="text-sm">
+            Page {table.getState().pagination.pageIndex + 1} of {" "}
+            {table.getPageCount()}
+          </span>
+          <Button
+            variant="outline"
+            size="icon"
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
           >
-            Next
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+            disabled={!table.getCanNextPage()}
+          >
+            <ChevronsRight className="h-4 w-4" />
           </Button>
         </div>
       </div>
 
-      <Drawer
+      <ContactDrawer
         open={drawerOpen}
         onOpenChange={setDrawerOpen}
-        direction={isMobile ? "bottom" : "right"}
-      >
-        <DrawerContent>
-          <DrawerHeader>
-            <DrawerTitle>Edit Contact</DrawerTitle>
-            <DrawerDescription>Update the contact details.</DrawerDescription>
-          </DrawerHeader>
-          {current && (
-            <div className="grid gap-4 p-4">
-              <Input
-                value={current.name}
-                onChange={(e) => setCurrent({ ...current, name: e.target.value })}
-                placeholder="Name"
-              />
-              <Input
-                value={current.email}
-                onChange={(e) =>
-                  setCurrent({ ...current, email: e.target.value })
-                }
-                placeholder="Email"
-              />
-              <Input
-                value={current.jobTitle}
-                onChange={(e) =>
-                  setCurrent({ ...current, jobTitle: e.target.value })
-                }
-                placeholder="Job Title"
-              />
-              <Input
-                value={current.company}
-                onChange={(e) =>
-                  setCurrent({ ...current, company: e.target.value })
-                }
-                placeholder="Company"
-              />
-              <Select
-                value={current.status}
-                onValueChange={(value) =>
-                  setCurrent({ ...current, status: value as Contact["status"] })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  {contactSchema.shape.status.options.map((status) => (
-                    <SelectItem key={status} value={status}>
-                      {status}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select
-                value={current.assignedTo}
-                onValueChange={(value) =>
-                  setCurrent({ ...current, assignedTo: value })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Assigned To" />
-                </SelectTrigger>
-                <SelectContent>
-                  {["Sam", "Jane", "Mike", "Sara"].map((m) => (
-                    <SelectItem key={m} value={m}>
-                      {m}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-          <DrawerFooter>
-            <Button
-              onClick={() => current && (saveContact(current), setDrawerOpen(false))}
-            >
-              Save Changes
-            </Button>
-            <DrawerClose asChild>
-              <Button variant="outline">Cancel</Button>
-            </DrawerClose>
-          </DrawerFooter>
-        </DrawerContent>
-      </Drawer>
+        contact={current}
+        onSave={(c) => {
+          saveContact(c)
+          setDrawerOpen(false)
+        }}
+      />
     </div>
   )
 }
 
-interface RowActionsMenuProps {
+interface RowActionsProps {
   onView: () => void
   onEdit: () => void
-  onEmail: () => void
   onDelete: () => void
 }
 
-function RowActionsMenu({ onView, onEdit, onEmail, onDelete }: RowActionsMenuProps) {
+function RowActions({ onView, onEdit, onDelete }: RowActionsProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -524,11 +473,9 @@ function RowActionsMenu({ onView, onEdit, onEmail, onDelete }: RowActionsMenuPro
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem onClick={onView}>View Details</DropdownMenuItem>
-        <DropdownMenuItem onClick={onEdit}>Edit Contact</DropdownMenuItem>
-        <DropdownMenuItem onClick={onEmail}>Send Email</DropdownMenuItem>
-        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={onEdit}>Edit</DropdownMenuItem>
         <DropdownMenuItem className="text-destructive" onClick={onDelete}>
-          Delete Contact
+          Delete
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
@@ -540,14 +487,8 @@ interface DraggableRowProps {
 }
 
 function DraggableRow({ row }: DraggableRowProps) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: row.id })
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
+    useSortable({ id: row.id })
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
@@ -584,3 +525,259 @@ function DraggableRow({ row }: DraggableRowProps) {
     </TableRow>
   )
 }
+
+interface ContactDrawerProps {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  contact: Contact | null
+  onSave: (contact: Contact) => void
+}
+
+function ContactDrawer({ open, onOpenChange, contact, onSave }: ContactDrawerProps) {
+  const isMobile = useIsMobile()
+  const form = useForm<Contact>({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    resolver: zodResolver(contactSchema) as any,
+    defaultValues: contact ?? {
+      id: "",
+      type: "Individual",
+      roles: [],
+      firstName: "",
+      middleName: "",
+      lastName: "",
+      primaryEmail: "",
+      alternateEmails: [],
+      phoneNumbers: [""],
+      mailingLists: [],
+      doNotEmail: false,
+    },
+  })
+
+  React.useEffect(() => {
+    if (contact) {
+      form.reset(contact)
+    }
+  }, [contact, form])
+
+  const {
+    control,
+    register,
+    handleSubmit,
+    watch,
+    setValue,
+  } = form
+
+  const { fields: altEmailFields, append: appendEmail, remove: removeEmail } =
+    useFieldArray({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      control: control as any,
+      name: "alternateEmails",
+    })
+
+  const { fields: phoneFields, append: appendPhone, remove: removePhone } =
+    useFieldArray({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      control: control as any,
+      name: "phoneNumbers",
+    })
+
+  const roles = ["Donor", "Volunteer", "Board"]
+  const pronounOptions = ["He/Him", "She/Her", "They/Them", "Other"]
+  const mailingListOptions = ["Newsletter", "Events", "Volunteers"]
+
+  const onSubmit = handleSubmit((values: Contact) => {
+    onSave(values)
+  })
+
+  return (
+    <Drawer open={open} onOpenChange={onOpenChange} direction={isMobile ? "bottom" : "right"}>
+      <DrawerContent className="max-h-screen">
+        <DrawerHeader>
+          <DrawerTitle>{contact ? "Edit Contact" : "New Contact"}</DrawerTitle>
+          <DrawerDescription>Manage contact details</DrawerDescription>
+        </DrawerHeader>
+        <form
+          id="contact-form"
+          onSubmit={onSubmit}
+          className="overflow-y-auto px-4 pb-4 space-y-4"
+        >
+          <div className="space-y-2">
+            <Label>Type</Label>
+            <div className="flex flex-wrap gap-2">
+              {contactSchema.shape.type.options.map((opt) => (
+                <Button
+                  key={opt}
+                  type="button"
+                  variant={watch("type") === opt ? "default" : "outline"}
+                  onClick={() => setValue("type", opt)}
+                >
+                  {opt}
+                </Button>
+              ))}
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label>Roles</Label>
+            {roles.map((role) => (
+              <div key={role} className="flex items-center space-x-2">
+                <Checkbox
+                  checked={watch("roles")?.includes(role)}
+                  onCheckedChange={(checked) => {
+                    const currentRoles = watch("roles") ?? []
+                    if (checked) {
+                      setValue("roles", [...currentRoles, role])
+                    } else {
+                      setValue(
+                        "roles",
+                        currentRoles.filter((r) => r !== role)
+                      )
+                    }
+                  }}
+                />
+                <span>{role}</span>
+              </div>
+            ))}
+          </div>
+          <div className="grid gap-2">
+            <Input placeholder="Honorific" {...register("honorific")} />
+            <Input placeholder="First Name" {...register("firstName")} />
+            <Input placeholder="Middle Name" {...register("middleName")} />
+            <Input placeholder="Last Name" {...register("lastName")} />
+            <Input placeholder="Aliases" {...register("aliases")} />
+            <Input
+              placeholder="How to Credit Publicly"
+              {...register("howToCreditPublicly")}
+            />
+            <Select
+              value={watch("pronouns")}
+              onValueChange={(v) => setValue("pronouns", v as Contact["pronouns"])}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Pronouns" />
+              </SelectTrigger>
+              <SelectContent>
+                {pronounOptions.map((p) => (
+                  <SelectItem key={p} value={p}>
+                    {p}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Input placeholder="Job Title" {...register("jobTitle")} />
+            <Input
+              placeholder="Company / Organization Name"
+              {...register("company")}
+            />
+          </div>
+          <div className="grid gap-2">
+            <Input
+              placeholder="Primary Email"
+              {...register("primaryEmail")}
+            />
+            {altEmailFields.map((field, index) => (
+              <div key={field.id} className="flex space-x-2">
+                <Input
+                  className="flex-1"
+                  placeholder="Alternate Email"
+                  {...register(`alternateEmails.${index}` as const)}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => removeEmail(index)}
+                >
+                  Remove
+                </Button>
+              </div>
+            ))}
+            {altEmailFields.length < 2 && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => appendEmail("")}
+              >
+                Add another email
+              </Button>
+            )}
+            <Input placeholder="Website" {...register("website")} />
+            <Input
+              placeholder="Social Media"
+              {...register("socialMedia")}
+            />
+          </div>
+          <div className="grid gap-2">
+            {phoneFields.map((field, index) => (
+              <div key={field.id} className="flex space-x-2">
+                <Input
+                  className="flex-1"
+                  placeholder="Phone Number"
+                  {...register(`phoneNumbers.${index}` as const)}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => removePhone(index)}
+                >
+                  Remove
+                </Button>
+              </div>
+            ))}
+            {phoneFields.length < 3 && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => appendPhone("")}
+              >
+                Add phone number
+              </Button>
+            )}
+          </div>
+          <div className="grid gap-2">
+            <Input
+              type="date"
+              placeholder="Date of Birth"
+              {...register("dateOfBirth")}
+            />
+            <Input type="file" {...register("documents")} multiple />
+          </div>
+          <div className="space-y-2">
+            <Label>Mailing Lists</Label>
+            {mailingListOptions.map((list) => (
+              <div key={list} className="flex items-center space-x-2">
+                <Checkbox
+                  checked={watch("mailingLists")?.includes(list)}
+                  onCheckedChange={(checked) => {
+                    const lists = watch("mailingLists") ?? []
+                    if (checked) {
+                      setValue("mailingLists", [...lists, list])
+                    } else {
+                      setValue(
+                        "mailingLists",
+                        lists.filter((l) => l !== list)
+                      )
+                    }
+                  }}
+                />
+                <span>{list}</span>
+              </div>
+            ))}
+            <div className="flex items-center space-x-2">
+              <Checkbox {...register("doNotEmail")}/> <span>Do not email</span>
+            </div>
+          </div>
+        </form>
+        <DrawerFooter className="border-t p-4">
+          <Button type="submit" form="contact-form">
+            Save
+          </Button>
+          <DrawerClose asChild>
+            <Button variant="outline">Cancel</Button>
+          </DrawerClose>
+        </DrawerFooter>
+      </DrawerContent>
+    </Drawer>
+  )
+}
+
