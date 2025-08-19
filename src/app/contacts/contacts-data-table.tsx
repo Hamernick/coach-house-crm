@@ -18,6 +18,7 @@ import { DndContext, DragEndEvent } from "@dnd-kit/core"
 import {
   SortableContext,
   verticalListSortingStrategy,
+  horizontalListSortingStrategy,
   arrayMove,
   useSortable,
 } from "@dnd-kit/sortable"
