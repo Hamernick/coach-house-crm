@@ -609,8 +609,7 @@ interface ContactDrawerProps {
 function ContactDrawer({ open, onOpenChange, contact, onSave }: ContactDrawerProps) {
   const isMobile = useIsMobile()
   const form = useForm<Contact>({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    resolver: zodResolver(contactSchema) as any,
+    resolver: zodResolver<Contact>(contactSchema),
     defaultValues: contact ?? {
       id: "",
       type: "Individual",
@@ -641,16 +640,14 @@ function ContactDrawer({ open, onOpenChange, contact, onSave }: ContactDrawerPro
   } = form
 
   const { fields: altEmailFields, append: appendEmail, remove: removeEmail } =
-    useFieldArray({
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      control: control as any,
+    useFieldArray<Contact>({
+      control,
       name: "alternateEmails",
     })
 
   const { fields: phoneFields, append: appendPhone, remove: removePhone } =
-    useFieldArray({
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      control: control as any,
+    useFieldArray<Contact>({
+      control,
       name: "phoneNumbers",
     })
 
