@@ -4,7 +4,7 @@ import { SiteHeader } from "@/components/site-header"
 export default function SegmentsPage() {
   return (
     <SidebarInset>
-      <SiteHeader />
+      <SiteHeader title="Segments" />
       <div className="p-4">
         <h1 className="text-2xl font-bold">Segments</h1>
       </div>
