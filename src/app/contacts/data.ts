@@ -1,69 +1,106 @@
-export type Contact = {
-  id: string
-  name: string
-  email: string
-  status: "Active" | "Inactive"
-}
+import { z } from "zod"
+
+export const contactSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  email: z.string().email(),
+  jobTitle: z.string(),
+  company: z.string(),
+  status: z.enum(["Lead", "Contacted", "Proposal", "Closed"]),
+  assignedTo: z.string(),
+})
+
+export type Contact = z.infer<typeof contactSchema>
 
 export const contacts: Contact[] = [
   {
     id: "1",
     name: "Alice Johnson",
     email: "alice@example.com",
-    status: "Active",
+    jobTitle: "CEO",
+    company: "Acme Inc",
+    status: "Lead",
+    assignedTo: "Sam",
   },
   {
     id: "2",
     name: "Bob Smith",
     email: "bob@example.com",
-    status: "Inactive",
+    jobTitle: "CTO",
+    company: "Beta Corp",
+    status: "Contacted",
+    assignedTo: "Jane",
   },
   {
     id: "3",
     name: "Carol Davis",
     email: "carol@example.com",
-    status: "Active",
+    jobTitle: "Product Manager",
+    company: "Creative Solutions",
+    status: "Proposal",
+    assignedTo: "Mike",
   },
   {
     id: "4",
     name: "David Miller",
     email: "david@example.com",
-    status: "Active",
+    jobTitle: "Sales Lead",
+    company: "Delta LLC",
+    status: "Closed",
+    assignedTo: "Sara",
   },
   {
     id: "5",
     name: "Eve Thompson",
     email: "eve@example.com",
-    status: "Inactive",
+    jobTitle: "Designer",
+    company: "Echo Design",
+    status: "Lead",
+    assignedTo: "Sam",
   },
   {
     id: "6",
     name: "Frank Brown",
     email: "frank@example.com",
-    status: "Active",
+    jobTitle: "Developer",
+    company: "Foxtrot Tech",
+    status: "Contacted",
+    assignedTo: "Jane",
   },
   {
     id: "7",
     name: "Grace Lee",
     email: "grace@example.com",
-    status: "Inactive",
+    jobTitle: "HR Manager",
+    company: "Gamma Group",
+    status: "Proposal",
+    assignedTo: "Mike",
   },
   {
     id: "8",
     name: "Henry Wilson",
     email: "henry@example.com",
-    status: "Active",
+    jobTitle: "Accountant",
+    company: "Hotel Finance",
+    status: "Closed",
+    assignedTo: "Sara",
   },
   {
     id: "9",
     name: "Ivy Clark",
     email: "ivy@example.com",
-    status: "Active",
+    jobTitle: "Marketing Lead",
+    company: "Indigo Marketing",
+    status: "Lead",
+    assignedTo: "Sam",
   },
   {
     id: "10",
     name: "Jack White",
     email: "jack@example.com",
-    status: "Inactive",
+    jobTitle: "Support Specialist",
+    company: "Juliet Support",
+    status: "Contacted",
+    assignedTo: "Jane",
   },
 ]
