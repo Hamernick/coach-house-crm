@@ -6,7 +6,6 @@ export default function MarketingPage() {
     <SidebarInset>
       <SiteHeader title="Marketing" />
       <div className="p-4">
-        <h1 className="text-2xl font-bold">Marketing</h1>
       </div>
     </SidebarInset>
   )

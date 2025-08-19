@@ -6,7 +6,6 @@ export default function FinancePage() {
     <SidebarInset>
       <SiteHeader title="Finance" />
       <div className="p-4">
-        <h1 className="text-2xl font-bold">Finance</h1>
       </div>
     </SidebarInset>
   )

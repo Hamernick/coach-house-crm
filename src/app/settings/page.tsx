@@ -6,7 +6,6 @@ export default function SettingsPage() {
     <SidebarInset>
       <SiteHeader title="Settings" />
       <div className="p-4">
-        <h1 className="text-2xl font-bold">Settings</h1>
       </div>
     </SidebarInset>
   )

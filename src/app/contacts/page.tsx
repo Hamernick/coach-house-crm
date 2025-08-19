@@ -6,7 +6,6 @@ export default function ContactsPage() {
     <SidebarInset>
       <SiteHeader title="Contacts" />
       <div className="p-4">
-        <h1 className="text-2xl font-bold">Contacts</h1>
       </div>
     </SidebarInset>
   )

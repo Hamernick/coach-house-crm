@@ -6,7 +6,6 @@ export default function SequencesPage() {
     <SidebarInset>
       <SiteHeader title="Sequences" />
       <div className="p-4">
-        <h1 className="text-2xl font-bold">Sequences</h1>
       </div>
     </SidebarInset>
   )
