@@ -2,10 +2,13 @@
 
 import * as React from "react"
 import {
+  IconLayoutDashboard,
   IconUsers,
-  IconFileDescription,
-  IconCamera,
-  IconChartBar,
+  IconTag,
+  IconMail,
+  IconTimeline,
+  IconCurrencyDollar,
+  IconReportAnalytics,
   IconSettings,
   IconHelp,
   IconSearch,
@@ -20,68 +23,26 @@ import {
   SidebarFooter,
   SidebarHeader,
 } from "@/components/ui/sidebar"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
-const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-    organization: "User Organization", // Dynamically reflect the logged-in user's organization
-  },
-  navMain: [
-    {
-      title: "Home",
-      url: "#home",
-      icon: IconUsers, // Replace with an appropriate icon for 'Home'
-    },
-    {
-      title: "Contacts",
-      url: "#contacts",
-      icon: IconUsers,
-    },
-    {
-      title: "Email",
-      url: "#email",
-      icon: IconFileDescription,
-    },
-    {
-      title: "Social",
-      url: "#social",
-      icon: IconCamera,
-    },
-    {
-      title: "Finance",
-      url: "#finance",
-      icon: IconChartBar,
-    },
-  ],
-  navSecondary: [
-    {
-      title: "Settings",
-      url: "#settings",
-      icon: IconSettings,
-    },
-    {
-      title: "Get Help",
-      url: "#help",
-      icon: IconHelp,
-    },
-    {
-      title: "Search",
-      url: "#search",
-      icon: IconSearch,
-    },
-  ],
+const user = {
+  name: "shadcn",
+  email: "m@example.com",
+  avatar: "/avatars/shadcn.jpg",
+  organization: "User Organization",
 }
 
-export function AppSidebar({ setActiveSection, ...props }: { setActiveSection: (section: string) => void } & React.ComponentProps<typeof Sidebar>) {
-  const [isSettingsOpen, setIsSettingsOpen] = React.useState(false)
+const navMain = [
+  { title: "Dashboard", url: "/dashboard", icon: IconLayoutDashboard },
+  { title: "Contacts", url: "/contacts", icon: IconUsers },
+  { title: "Segments", url: "/segments", icon: IconTag },
+  { title: "Marketing", url: "/marketing", icon: IconMail },
+  { title: "Sequences", url: "/sequences", icon: IconTimeline },
+  { title: "Finance", url: "/finance", icon: IconCurrencyDollar },
+  { title: "Reports", url: "/reports", icon: IconReportAnalytics },
+  { title: "Settings", url: "/settings", icon: IconSettings },
+]
 
-  const handleSettingsClick = () => {
-    setIsSettingsOpen(true)
-  }
-
+export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
   const handleGetHelpClick = () => {
     alert("Get Help functionality coming soon!")
   }
@@ -90,47 +51,23 @@ export function AppSidebar({ setActiveSection, ...props }: { setActiveSection: (
     alert("Search functionality coming soon!")
   }
 
+  const navSecondary = [
+    { title: "Get Help", icon: IconHelp, onClick: handleGetHelpClick },
+    { title: "Search", icon: IconSearch, onClick: handleSearchClick },
+  ]
+
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
-        <div className="text-base font-semibold">{data.user.organization}</div>
+        <div className="text-base font-semibold">{user.organization}</div>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain
-          items={data.navMain.map((item) => ({
-            ...item,
-            onClick: () => setActiveSection(item.title.toLowerCase()),
-          }))}
-        />
-        <NavSecondary
-          items={data.navSecondary.map((item) => {
-            if (item.title === "Settings") {
-              return { ...item, onClick: handleSettingsClick }
-            } else if (item.title === "Get Help") {
-              return { ...item, onClick: handleGetHelpClick }
-            } else if (item.title === "Search") {
-              return { ...item, onClick: handleSearchClick }
-            }
-            return item
-          })}
-          className="mt-auto"
-        />
+        <NavMain items={navMain} />
+        <NavSecondary items={navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={user} />
       </SidebarFooter>
-
-      <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>CRM Settings</DialogTitle>
-          </DialogHeader>
-          <div>
-            {/* Add CRM settings form or content here */}
-            <p>Settings content goes here.</p>
-          </div>
-        </DialogContent>
-      </Dialog>
     </Sidebar>
   )
 }
