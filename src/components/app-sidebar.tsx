@@ -2,24 +2,15 @@
 
 import * as React from "react"
 import {
+  IconUsers,
+  IconFileDescription,
   IconCamera,
   IconChartBar,
-  IconDashboard,
-  IconDatabase,
-  IconFileAi,
-  IconFileDescription,
-  IconFileWord,
-  IconFolder,
-  IconHelp,
-  IconInnerShadowTop,
-  IconListDetails,
-  IconReport,
-  IconSearch,
   IconSettings,
-  IconUsers,
+  IconHelp,
+  IconSearch,
 } from "@tabler/icons-react"
 
-import { NavDocuments } from "@/components/nav-documents"
 import { NavMain } from "@/components/nav-main"
 import { NavSecondary } from "@/components/nav-secondary"
 import { NavUser } from "@/components/nav-user"
@@ -28,154 +19,118 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
 } from "@/components/ui/sidebar"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
 const data = {
   user: {
     name: "shadcn",
     email: "m@example.com",
     avatar: "/avatars/shadcn.jpg",
+    organization: "User Organization", // Dynamically reflect the logged-in user's organization
   },
   navMain: [
     {
-      title: "Dashboard",
-      url: "#",
-      icon: IconDashboard,
+      title: "Home",
+      url: "#home",
+      icon: IconUsers, // Replace with an appropriate icon for 'Home'
     },
     {
-      title: "Lifecycle",
-      url: "#",
-      icon: IconListDetails,
-    },
-    {
-      title: "Analytics",
-      url: "#",
-      icon: IconChartBar,
-    },
-    {
-      title: "Projects",
-      url: "#",
-      icon: IconFolder,
-    },
-    {
-      title: "Team",
-      url: "#",
+      title: "Contacts",
+      url: "#contacts",
       icon: IconUsers,
     },
-  ],
-  navClouds: [
     {
-      title: "Capture",
-      icon: IconCamera,
-      isActive: true,
-      url: "#",
-      items: [
-        {
-          title: "Active Proposals",
-          url: "#",
-        },
-        {
-          title: "Archived",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Proposal",
+      title: "Email",
+      url: "#email",
       icon: IconFileDescription,
-      url: "#",
-      items: [
-        {
-          title: "Active Proposals",
-          url: "#",
-        },
-        {
-          title: "Archived",
-          url: "#",
-        },
-      ],
     },
     {
-      title: "Prompts",
-      icon: IconFileAi,
-      url: "#",
-      items: [
-        {
-          title: "Active Proposals",
-          url: "#",
-        },
-        {
-          title: "Archived",
-          url: "#",
-        },
-      ],
+      title: "Social",
+      url: "#social",
+      icon: IconCamera,
+    },
+    {
+      title: "Finance",
+      url: "#finance",
+      icon: IconChartBar,
     },
   ],
   navSecondary: [
     {
       title: "Settings",
-      url: "#",
+      url: "#settings",
       icon: IconSettings,
     },
     {
       title: "Get Help",
-      url: "#",
+      url: "#help",
       icon: IconHelp,
     },
     {
       title: "Search",
-      url: "#",
+      url: "#search",
       icon: IconSearch,
-    },
-  ],
-  documents: [
-    {
-      name: "Data Library",
-      url: "#",
-      icon: IconDatabase,
-    },
-    {
-      name: "Reports",
-      url: "#",
-      icon: IconReport,
-    },
-    {
-      name: "Word Assistant",
-      url: "#",
-      icon: IconFileWord,
     },
   ],
 }
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+export function AppSidebar({ setActiveSection, ...props }: { setActiveSection: (section: string) => void } & React.ComponentProps<typeof Sidebar>) {
+  const [isSettingsOpen, setIsSettingsOpen] = React.useState(false)
+
+  const handleSettingsClick = () => {
+    setIsSettingsOpen(true)
+  }
+
+  const handleGetHelpClick = () => {
+    alert("Get Help functionality coming soon!")
+  }
+
+  const handleSearchClick = () => {
+    alert("Search functionality coming soon!")
+  }
+
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              asChild
-              className="data-[slot=sidebar-menu-button]:!p-1.5"
-            >
-              <a href="#">
-                <IconInnerShadowTop className="!size-5" />
-                <span className="text-base font-semibold">Acme Inc.</span>
-              </a>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
+        <div className="text-base font-semibold">{data.user.organization}</div>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        <NavDocuments items={data.documents} />
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
+        <NavMain
+          items={data.navMain.map((item) => ({
+            ...item,
+            onClick: () => setActiveSection(item.title.toLowerCase()),
+          }))}
+        />
+        <NavSecondary
+          items={data.navSecondary.map((item) => {
+            if (item.title === "Settings") {
+              return { ...item, onClick: handleSettingsClick }
+            } else if (item.title === "Get Help") {
+              return { ...item, onClick: handleGetHelpClick }
+            } else if (item.title === "Search") {
+              return { ...item, onClick: handleSearchClick }
+            }
+            return item
+          })}
+          className="mt-auto"
+        />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={data.user} />
       </SidebarFooter>
+
+      <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>CRM Settings</DialogTitle>
+          </DialogHeader>
+          <div>
+            {/* Add CRM settings form or content here */}
+            <p>Settings content goes here.</p>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Sidebar>
   )
 }

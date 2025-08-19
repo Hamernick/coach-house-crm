@@ -1,40 +1,41 @@
-import { AppSidebar } from "@/components/app-sidebar"
-import { ChartAreaInteractive } from "@/components/chart-area-interactive"
-import { DataTable } from "@/components/data-table"
-import { SectionCards } from "@/components/section-cards"
-import { SiteHeader } from "@/components/site-header"
-import {
-  SidebarInset,
-  SidebarProvider,
-} from "@/components/ui/sidebar"
+"use client"
 
-import data from "./data.json"
+import { useState } from "react"
+import { AppSidebar } from "@/components/app-sidebar"
+import ContactsSection from "./sections/contacts"
+import EmailSection from "./sections/email"
+import SocialSection from "./sections/social"
+import FinanceSection from "./sections/finance"
+import { SiteHeader } from "@/components/site-header"
+import { SidebarProvider } from "@/components/ui/sidebar"
 
 export default function Page() {
+  const [activeSection, setActiveSection] = useState("home")
+
+  const renderContent = () => {
+    switch (activeSection) {
+      case "contacts":
+        return <ContactsSection />
+      case "email":
+        return <EmailSection />
+      case "social":
+        return <SocialSection />
+      case "finance":
+        return <FinanceSection />
+      default:
+        return <div className="p-4">Welcome to the Dashboard</div>
+    }
+  }
+
   return (
-    <SidebarProvider
-      style={
-        {
-          "--sidebar-width": "calc(var(--spacing) * 72)",
-          "--header-height": "calc(var(--spacing) * 12)",
-        } as React.CSSProperties
-      }
-    >
-      <AppSidebar variant="inset" />
-      <SidebarInset>
-        <SiteHeader />
-        <div className="flex flex-1 flex-col">
-          <div className="@container/main flex flex-1 flex-col gap-2">
-            <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-              <SectionCards />
-              <div className="px-4 lg:px-6">
-                <ChartAreaInteractive />
-              </div>
-              <DataTable data={data} />
-            </div>
-          </div>
+    <SidebarProvider>
+      <div className="flex h-screen">
+        <AppSidebar setActiveSection={setActiveSection} />
+        <div className="flex-1 flex flex-col">
+          <SiteHeader />
+          <main className="flex-1 overflow-auto">{renderContent()}</main>
         </div>
-      </SidebarInset>
+      </div>
     </SidebarProvider>
   )
 }
