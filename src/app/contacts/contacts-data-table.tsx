@@ -72,6 +72,8 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { MultiSelect } from "@/components/ui/multi-select"
 import {
   Table,
   TableBody,
@@ -674,40 +676,29 @@ function ContactDrawer({ open, onOpenChange, contact, onSave }: ContactDrawerPro
         >
           <div className="space-y-2">
             <Label>Type</Label>
-            <div className="flex flex-wrap gap-2">
+            <RadioGroup
+              className="flex flex-wrap gap-2"
+              value={watch("type")}
+              onValueChange={(v) =>
+                setValue("type", v as Contact["type"])
+              }
+            >
               {contactSchema.shape.type.options.map((opt) => (
-                <Button
-                  key={opt}
-                  type="button"
-                  variant={watch("type") === opt ? "default" : "outline"}
-                  onClick={() => setValue("type", opt)}
-                >
-                  {opt}
-                </Button>
+                <div key={opt} className="flex items-center space-x-2">
+                  <RadioGroupItem value={opt} id={`type-${opt}`} />
+                  <Label htmlFor={`type-${opt}`}>{opt}</Label>
+                </div>
               ))}
-            </div>
+            </RadioGroup>
           </div>
           <div className="space-y-2">
             <Label>Roles</Label>
-            {roles.map((role) => (
-              <div key={role} className="flex items-center space-x-2">
-                <Checkbox
-                  checked={watch("roles")?.includes(role)}
-                  onCheckedChange={(checked) => {
-                    const currentRoles = watch("roles") ?? []
-                    if (checked) {
-                      setValue("roles", [...currentRoles, role])
-                    } else {
-                      setValue(
-                        "roles",
-                        currentRoles.filter((r) => r !== role)
-                      )
-                    }
-                  }}
-                />
-                <span>{role}</span>
-              </div>
-            ))}
+            <MultiSelect
+              options={roles.map((r) => ({ label: r, value: r }))}
+              value={watch("roles") ?? []}
+              onChange={(vals) => setValue("roles", vals)}
+              placeholder="Select roles"
+            />
           </div>
           <div className="grid gap-2">
             <Input placeholder="Honorific" {...register("honorific")} />
