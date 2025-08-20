@@ -187,14 +187,7 @@ export function ContactsDataTable({ data }: ContactsDataTableProps) {
       {
         accessorKey: "firstName",
         header: "First Name",
-        cell: ({ row }) => {
-          const c = row.original
-          return (
-            <Button variant="link" onClick={() => openDrawer(c)}>
-              {c.firstName}
-            </Button>
-          )
-        },
+        cell: ({ row }) => row.original.firstName,
         meta: { label: "First Name" },
       },
       {
@@ -435,7 +428,7 @@ export function ContactsDataTable({ data }: ContactsDataTableProps) {
             <DropdownMenuTrigger asChild>
               <Button variant="outline">
                 <ColumnsIcon className="mr-2 h-4 w-4" />
-                Customize Columns
+                Filter Columns
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -537,9 +530,18 @@ export function ContactsDataTable({ data }: ContactsDataTableProps) {
                   <TableRow
                     key={row.id}
                     data-state={row.getIsSelected() && "selected"}
+                    onClick={() => openDrawer(row.original)}
+                    className="cursor-pointer"
                   >
                     {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
+                      <TableCell
+                        key={cell.id}
+                        onClick={
+                          cell.column.id === "select" || cell.column.id === "actions"
+                            ? (e) => e.stopPropagation()
+                            : undefined
+                        }
+                      >
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
                       </TableCell>
                     ))}
