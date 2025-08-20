@@ -613,6 +613,10 @@ export function ContactsDataTable({ data }: ContactsDataTableProps) {
           saveContact(c)
           setDrawerOpen(false)
         }}
+        onDelete={(id) => {
+          deleteContact(id)
+          setDrawerOpen(false)
+        }}
       />
     </div>
   )
