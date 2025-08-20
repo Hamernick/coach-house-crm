@@ -10,6 +10,7 @@ import { contactSchema, type Contact } from "../data"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import {
   Drawer,
   DrawerContent,
@@ -29,6 +30,7 @@ import {
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { MultiSelect } from "@/components/ui/multi-select"
+import { Mail, Phone } from "lucide-react"
 
 interface ContactDrawerProps {
   open: boolean
@@ -88,6 +90,20 @@ export function ContactDrawer({ open, onOpenChange, contact, onSave }: ContactDr
   const pronounOptions = ["He/Him", "She/Her", "They/Them", "Other"]
   const mailingListOptions = ["Newsletter", "Events", "Volunteers"]
 
+  const fullName = React.useMemo(
+    () =>
+      [contact?.firstName, contact?.middleName, contact?.lastName]
+        .filter(Boolean)
+        .join(" "),
+    [contact]
+  )
+  const initials = React.useMemo(() => {
+    const first = contact?.firstName?.[0] ?? ""
+    const last = contact?.lastName?.[0] ?? ""
+    return (first + last).toUpperCase() || "CN"
+  }, [contact])
+  const avatarSrc = (contact as { avatar?: string } | null)?.avatar
+
   const onSubmit = handleSubmit((values: Contact) => {
     onSave(values)
   })
@@ -96,8 +112,57 @@ export function ContactDrawer({ open, onOpenChange, contact, onSave }: ContactDr
     <Drawer open={open} onOpenChange={onOpenChange} direction={isMobile ? "bottom" : "right"}>
       <DrawerContent className="max-h-screen">
         <DrawerHeader>
-          <DrawerTitle>{contact ? "Edit Contact" : "New Contact"}</DrawerTitle>
-          <DrawerDescription>Manage contact details</DrawerDescription>
+          {contact ? (
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <Avatar className="h-12 w-12">
+                  {avatarSrc && <AvatarImage src={avatarSrc} alt={fullName} />}
+                  <AvatarFallback>{initials}</AvatarFallback>
+                </Avatar>
+                <div className="flex flex-col">
+                  <DrawerTitle>{fullName}</DrawerTitle>
+                  {(contact.company || contact.primaryEmail) && (
+                    <DrawerDescription>
+                      {contact.company || contact.primaryEmail}
+                    </DrawerDescription>
+                  )}
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                {contact.primaryEmail && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    asChild
+                  >
+                    <a href={`mailto:${contact.primaryEmail}`}>
+                      <Mail className="h-4 w-4" />
+                      <span className="sr-only">Email</span>
+                    </a>
+                  </Button>
+                )}
+                {contact.phoneNumbers?.[0] && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    asChild
+                  >
+                    <a href={`tel:${contact.phoneNumbers[0]}`}>
+                      <Phone className="h-4 w-4" />
+                      <span className="sr-only">Call</span>
+                    </a>
+                  </Button>
+                )}
+              </div>
+            </div>
+          ) : (
+            <>
+              <DrawerTitle>New Contact</DrawerTitle>
+              <DrawerDescription>Manage contact details</DrawerDescription>
+            </>
+          )}
         </DrawerHeader>
         <form
           id="contact-form"
