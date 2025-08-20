@@ -79,6 +79,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { Badge } from "@/components/ui/badge"
 
 import { ContactDrawer } from "./components/contact-drawer"
 import { RowActions } from "./components/row-actions"
@@ -176,7 +177,17 @@ export function ContactsDataTable({ data }: ContactsDataTableProps) {
       {
         accessorKey: "roles",
         header: "Roles",
-        cell: ({ row }) => row.original.roles?.join(", ") ?? "",
+        cell: ({ row }) => {
+          const roles = row.original.roles ?? []
+          if (!roles.length) return null
+          return (
+            <div className="flex flex-wrap gap-1">
+              {roles.map((role) => (
+                <Badge key={role}>{role}</Badge>
+              ))}
+            </div>
+          )
+        },
         meta: { label: "Roles" },
       },
       {
@@ -304,6 +315,17 @@ export function ContactsDataTable({ data }: ContactsDataTableProps) {
       {
         accessorKey: "dateOfBirth",
         header: "Date of Birth",
+        cell: ({ row }) => {
+          const dob = row.original.dateOfBirth
+          if (!dob) return ""
+          const date = new Date(dob)
+          if (isNaN(date.getTime())) return ""
+          return date.toLocaleDateString("en-US", {
+            month: "2-digit",
+            day: "2-digit",
+            year: "numeric",
+          })
+        },
         meta: { label: "Date of Birth" },
       },
       {
