@@ -90,6 +90,7 @@ export function ContactDrawer({ open, onOpenChange, contact, onSave, onDelete }:
       phoneNumbers: [""],
       mailingLists: [],
       attribution: "",
+      donations: [],
       doNotEmail: false,
     },
   })

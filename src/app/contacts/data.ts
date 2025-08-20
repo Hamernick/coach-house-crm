@@ -43,6 +43,15 @@ export const contactSchema = z.object({
   // Documents & Lists
   documents: z.array(z.any()).optional(),
   mailingLists: z.array(z.string()).optional(),
+  // Donations
+  donations: z
+    .array(
+      z.object({
+        amount: z.number(),
+        date: z.string().optional(),
+      })
+    )
+    .optional(),
   doNotEmail: z.boolean().default(false),
 })
 
@@ -60,6 +69,10 @@ export const contacts: Contact[] = [
     primaryEmail: "alice@example.com",
     phoneNumbers: ["123-456-7890"],
     mailingLists: ["Newsletter"],
+    donations: [
+      { amount: 500, date: "2024-03-15" },
+      { amount: 250, date: "2024-06-01" },
+    ],
     doNotEmail: false,
   },
   {
@@ -70,6 +83,7 @@ export const contacts: Contact[] = [
     company: "Beta Corp",
     primaryEmail: "contact@betacorp.com",
     mailingLists: ["Newsletter", "Events"],
+    donations: [{ amount: 1000, date: "2024-02-10" }],
     doNotEmail: false,
   },
   {
@@ -81,6 +95,7 @@ export const contacts: Contact[] = [
     company: "Creative Solutions",
     primaryEmail: "carol@example.com",
     phoneNumbers: ["555-555-5555"],
+    donations: [],
     doNotEmail: true,
   },
 ]
