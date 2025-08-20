@@ -386,6 +386,7 @@ export function ContactsDataTable({ data }: ContactsDataTableProps) {
                       className="capitalize"
                       checked={column.getIsVisible()}
                       onCheckedChange={(value) => column.toggleVisibility(!!value)}
+                      onSelect={(e) => e.preventDefault()}
                     >
                       {label}
                     </DropdownMenuCheckboxItem>
@@ -399,7 +400,7 @@ export function ContactsDataTable({ data }: ContactsDataTableProps) {
                 <Plus className="mr-2 h-4 w-4" /> Add
               </Button>
             </PopoverTrigger>
-            <PopoverContent align="end" className="w-48">
+            <PopoverContent align="end" className="w-56 p-2">
               <div className="flex flex-col">
                 <Button variant="ghost" className="justify-start" onClick={handleAddNew}>
                   <UserPlus className="mr-2 h-4 w-4" /> Add New Contact
@@ -420,7 +421,7 @@ export function ContactsDataTable({ data }: ContactsDataTableProps) {
                 </Button>
                 <Button
                   variant="ghost"
-                  className="justify-start"
+                  className="justify-start whitespace-normal text-left"
                   onClick={() => toast("Download template not implemented")}
                 >
                   <FileDown className="mr-2 h-4 w-4" /> Download Template .csv
