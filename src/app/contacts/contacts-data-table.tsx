@@ -547,29 +547,7 @@ export function ContactsDataTable({ data }: ContactsDataTableProps) {
               ))}
             </TableHeader>
             <TableBody>
-              {table.getRowModel().rows?.length ? (
-                table.getRowModel().rows.map((row) => (
-                  <TableRow
-                    key={row.id}
-                    data-state={row.getIsSelected() && "selected"}
-                    onClick={() => openDrawer(row.original)}
-                    className="cursor-pointer"
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell
-                        key={cell.id}
-                        onClick={
-                          cell.column.id === "select" || cell.column.id === "actions"
-                            ? (e) => e.stopPropagation()
-                            : undefined
-                        }
-                      >
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))
-              ) : contacts.length === 0 ? (
+              {contacts.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={columns.length}>
                     <div className="flex h-80 flex-col items-center justify-center text-center">
@@ -592,6 +570,28 @@ export function ContactsDataTable({ data }: ContactsDataTableProps) {
                     </div>
                   </TableCell>
                 </TableRow>
+              ) : table.getRowModel().rows?.length ? (
+                table.getRowModel().rows.map((row) => (
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && "selected"}
+                    onClick={() => openDrawer(row.original)}
+                    className="cursor-pointer"
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell
+                        key={cell.id}
+                        onClick={
+                          cell.column.id === "select" || cell.column.id === "actions"
+                            ? (e) => e.stopPropagation()
+                            : undefined
+                        }
+                      >
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
               ) : (
                 <TableRow>
                   <TableCell colSpan={columns.length} className="h-24 text-center">
