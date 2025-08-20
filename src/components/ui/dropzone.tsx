@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { UploadCloud } from "lucide-react"
+import { UploadCloud, X } from "lucide-react"
 
 interface DropzoneProps {
   files?: File[]
@@ -13,8 +13,19 @@ export function Dropzone({ files = [], onFiles }: DropzoneProps) {
 
   const handleFiles = (fileList: FileList | null) => {
     if (!fileList) return
-    const newFiles = Array.from(fileList)
-    const updated = [...files, ...newFiles]
+    const MAX_SIZE = 12 * 1024 * 1024 // 12MB
+    const accepted = Array.from(fileList).filter((file) => {
+      const ext = file.name.toLowerCase().split(".").pop()
+      const isValidExt = ext === "pdf" || ext === "csv"
+      const isValidSize = file.size <= MAX_SIZE
+      return isValidExt && isValidSize
+    })
+    const updated = [...files, ...accepted]
+    onFiles?.(updated)
+  }
+
+  const removeFile = (index: number) => {
+    const updated = files.filter((_, i) => i !== index)
     onFiles?.(updated)
   }
 
@@ -34,13 +45,30 @@ export function Dropzone({ files = [], onFiles }: DropzoneProps) {
         ref={inputRef}
         type="file"
         multiple
+        accept=".pdf,.csv,application/pdf,text/csv"
         className="hidden"
         onChange={(e) => handleFiles(e.target.files)}
       />
       {files.length > 0 && (
-        <ul className="mt-4 w-full text-left text-xs">
-          {files.map((file) => (
-            <li key={file.name}>{file.name}</li>
+        <ul className="mt-4 w-full space-y-2 text-left text-xs">
+          {files.map((file, index) => (
+            <li
+              key={file.name}
+              className="flex items-center justify-between rounded border px-2 py-1"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <span className="truncate">{file.name}</span>
+              <button
+                type="button"
+                className="ml-2 rounded p-1 hover:bg-muted"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  removeFile(index)
+                }}
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </li>
           ))}
         </ul>
       )}
