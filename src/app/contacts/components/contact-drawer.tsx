@@ -123,6 +123,9 @@ export function ContactDrawer({ open, onOpenChange, contact, onSave, onDelete }:
     onSave(values)
   })
 
+  const tabTriggerClass =
+    "flex-none rounded-none border-0 border-b-2 border-transparent bg-transparent px-4 py-2 text-sm font-medium text-muted-foreground shadow-none transition-all data-[state=active]:border-b-black dark:data-[state=active]:border-b-white data-[state=active]:bg-transparent dark:data-[state=active]:bg-transparent data-[state=active]:font-semibold data-[state=active]:text-foreground data-[state=active]:shadow-none"
+
   return (
     <Drawer open={open} onOpenChange={onOpenChange} direction={isMobile ? "bottom" : "right"}>
       <DrawerContent className="max-h-screen">
@@ -150,7 +153,7 @@ export function ContactDrawer({ open, onOpenChange, contact, onSave, onDelete }:
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 text-destructive"
+                        className="h-8 w-8 rounded-md border text-destructive"
                       >
                         <Trash className="h-4 w-4" />
                         <span className="sr-only">Delete</span>
@@ -194,28 +197,16 @@ export function ContactDrawer({ open, onOpenChange, contact, onSave, onDelete }:
             className="flex flex-1 flex-col overflow-hidden"
           >
             <TabsList className="flex w-full border-b border-border bg-transparent p-0">
-              <TabsTrigger
-                value="details"
-                className="flex-none rounded-none border-b-2 border-transparent bg-transparent px-4 py-2 text-sm font-medium text-muted-foreground shadow-none transition-all data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:font-semibold data-[state=active]:text-foreground data-[state=active]:shadow-none"
-              >
+              <TabsTrigger value="details" className={tabTriggerClass}>
                 Details
               </TabsTrigger>
-              <TabsTrigger
-                value="communication"
-                className="flex-none rounded-none border-b-2 border-transparent bg-transparent px-4 py-2 text-sm font-medium text-muted-foreground shadow-none transition-all data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:font-semibold data-[state=active]:text-foreground data-[state=active]:shadow-none"
-              >
+              <TabsTrigger value="communication" className={tabTriggerClass}>
                 Communication
               </TabsTrigger>
-              <TabsTrigger
-                value="preferences"
-                className="flex-none rounded-none border-b-2 border-transparent bg-transparent px-4 py-2 text-sm font-medium text-muted-foreground shadow-none transition-all data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:font-semibold data-[state=active]:text-foreground data-[state=active]:shadow-none"
-              >
+              <TabsTrigger value="preferences" className={tabTriggerClass}>
                 Preferences
               </TabsTrigger>
-              <TabsTrigger
-                value="documents"
-                className="flex-none rounded-none border-b-2 border-transparent bg-transparent px-4 py-2 text-sm font-medium text-muted-foreground shadow-none transition-all data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:font-semibold data-[state=active]:text-foreground data-[state=active]:shadow-none"
-              >
+              <TabsTrigger value="documents" className={tabTriggerClass}>
                 Documents
               </TabsTrigger>
             </TabsList>
