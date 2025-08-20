@@ -3,7 +3,7 @@
 import * as React from "react"
 import { useForm, useFieldArray, type Resolver } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Trash } from "lucide-react"
+import { Trash, CalendarIcon } from "lucide-react"
 
 import { useIsMobile } from "@/hooks/use-mobile"
 import { contactSchema, type Contact } from "../data"
@@ -44,6 +44,27 @@ import { MultiSelect } from "@/components/ui/multi-select"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Separator } from "@/components/ui/separator"
 import { Dropzone } from "@/components/ui/dropzone"
+import { Calendar } from "@/components/ui/calendar"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+
+function formatDate(date: Date | undefined) {
+  if (!date) {
+    return ""
+  }
+  return date.toLocaleDateString("en-US", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  })
+}
+
+function isValidDate(date: Date | undefined) {
+  return !!date && !isNaN(date.getTime())
+}
 
 interface ContactDrawerProps {
   open: boolean
@@ -80,6 +101,7 @@ export function ContactDrawer({ open, onOpenChange, contact, onSave, onDelete }:
   }, [contact, form])
 
   const { control, register, handleSubmit, watch, setValue } = form
+  const dateOfBirthRegister = register("dateOfBirth")
 
   const {
     fields: altEmailFields,
@@ -118,6 +140,23 @@ export function ContactDrawer({ open, onOpenChange, contact, onSave, onDelete }:
     return (first + last).toUpperCase() || "CN"
   }, [contact])
   const avatarSrc = (contact as { avatar?: string } | null)?.avatar
+
+  const [dobOpen, setDobOpen] = React.useState(false)
+  const initialDob = contact?.dateOfBirth
+    ? new Date(contact.dateOfBirth)
+    : undefined
+  const [dobDate, setDobDate] = React.useState<Date | undefined>(initialDob)
+  const [dobMonth, setDobMonth] = React.useState<Date | undefined>(initialDob)
+  const [dobValue, setDobValue] = React.useState(formatDate(initialDob))
+
+  React.useEffect(() => {
+    const dob = contact?.dateOfBirth
+      ? new Date(contact.dateOfBirth)
+      : undefined
+    setDobDate(dob)
+    setDobMonth(dob)
+    setDobValue(formatDate(dob))
+  }, [contact])
 
   const onSubmit = handleSubmit((values: Contact) => {
     onSave(values)
@@ -212,7 +251,7 @@ export function ContactDrawer({ open, onOpenChange, contact, onSave, onDelete }:
             </TabsList>
             <TabsContent
               value="details"
-              className="space-y-4 overflow-y-auto px-4 pb-4"
+              className="space-y-4 overflow-y-auto p-4"
             >
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
@@ -320,18 +359,77 @@ export function ContactDrawer({ open, onOpenChange, contact, onSave, onDelete }:
               <Separator className="my-4" />
               <div className="space-y-2">
                 <Label htmlFor="dateOfBirth">Date of Birth</Label>
-                <Input
-                  type="date"
-                  id="dateOfBirth"
-                  className="sm:max-w-[200px]"
-                  placeholder="1990-01-01"
-                  {...register("dateOfBirth")}
-                />
+                <div className="relative flex gap-2">
+                  <Input
+                    id="dateOfBirth"
+                    value={dobValue}
+                    placeholder="June 01, 2025"
+                    className="bg-background pr-10 sm:max-w-[200px]"
+                    onChange={(e) => {
+                      const date = new Date(e.target.value)
+                      setDobValue(e.target.value)
+                      if (isValidDate(date)) {
+                        setDobDate(date)
+                        setDobMonth(date)
+                        setValue("dateOfBirth", formatDate(date), {
+                          shouldDirty: true,
+                        })
+                      } else {
+                        setValue("dateOfBirth", e.target.value, {
+                          shouldDirty: true,
+                        })
+                      }
+                    }}
+                    onBlur={dateOfBirthRegister.onBlur}
+                    name={dateOfBirthRegister.name}
+                    ref={dateOfBirthRegister.ref}
+                    onKeyDown={(e) => {
+                      if (e.key === "ArrowDown") {
+                        e.preventDefault()
+                        setDobOpen(true)
+                      }
+                    }}
+                  />
+                  <Popover open={dobOpen} onOpenChange={setDobOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        id="date-picker"
+                        variant="ghost"
+                        className="absolute top-1/2 right-2 size-6 -translate-y-1/2"
+                      >
+                        <CalendarIcon className="size-3.5" />
+                        <span className="sr-only">Select date</span>
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      className="w-auto overflow-hidden p-0"
+                      align="end"
+                      alignOffset={-8}
+                      sideOffset={10}
+                    >
+                      <Calendar
+                        mode="single"
+                        selected={dobDate}
+                        captionLayout="dropdown"
+                        month={dobMonth}
+                        onMonthChange={setDobMonth}
+                        onSelect={(date) => {
+                          setDobDate(date)
+                          setDobValue(formatDate(date))
+                          setValue("dateOfBirth", formatDate(date), {
+                            shouldDirty: true,
+                          })
+                          setDobOpen(false)
+                        }}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
               </div>
             </TabsContent>
             <TabsContent
               value="communication"
-              className="space-y-4 overflow-y-auto px-4 pb-4"
+              className="space-y-4 overflow-y-auto p-4"
             >
               <div className="grid gap-4">
                 <div className="space-y-2">
@@ -425,7 +523,7 @@ export function ContactDrawer({ open, onOpenChange, contact, onSave, onDelete }:
             </TabsContent>
             <TabsContent
               value="preferences"
-              className="space-y-4 overflow-y-auto px-4 pb-4"
+              className="space-y-4 overflow-y-auto p-4"
             >
               <div className="space-y-2">
                 <Label>Mailing Lists</Label>
@@ -455,7 +553,7 @@ export function ContactDrawer({ open, onOpenChange, contact, onSave, onDelete }:
             </TabsContent>
             <TabsContent
               value="documents"
-              className="space-y-4 overflow-y-auto px-4 pb-4"
+              className="space-y-4 overflow-y-auto p-4"
             >
               <Dropzone
                 files={watch("documents") as File[] | undefined}
