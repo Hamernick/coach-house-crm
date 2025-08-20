@@ -30,6 +30,8 @@ import {
   Upload,
   Download,
   FileDown,
+  Trash,
+  Archive as ArchiveIcon,
 } from "lucide-react"
 import { toast } from "sonner"
 
@@ -49,6 +51,18 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+
 import {
   Select,
   SelectContent,
@@ -82,6 +96,7 @@ export function ContactsDataTable({ data }: ContactsDataTableProps) {
   const [columnOrder, setColumnOrder] = React.useState<string[]>([])
   const [drawerOpen, setDrawerOpen] = React.useState(false)
   const [current, setCurrent] = React.useState<Contact | null>(null)
+  const [optionsOpen, setOptionsOpen] = React.useState(false)
 
   const createEmptyContact = React.useCallback((): Contact => ({
     id: Date.now().toString(),
@@ -364,6 +379,43 @@ export function ContactsDataTable({ data }: ContactsDataTableProps) {
           }
           className="max-w-sm"
         />
+        {table.getFilteredSelectedRowModel().rows.length > 0 && (
+          <Popover open={optionsOpen} onOpenChange={setOptionsOpen}>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="ml-2">Options</Button>
+            </PopoverTrigger>
+            <PopoverContent align="start" className="w-40">
+              <div className="flex flex-col">
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="ghost" className="justify-start text-destructive">
+                      <Trash className="mr-2 h-4 w-4" /> Delete
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>
+                        Delete {table.getFilteredSelectedRowModel().rows.length > 1 ? 'contacts' : 'contact'}?
+                      </AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This action cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={() => { table.getFilteredSelectedRowModel().rows.forEach(row => deleteContact(row.original.id)); table.resetRowSelection(); setOptionsOpen(false); }}>
+                        Delete
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+                <Button variant="ghost" className="justify-start" onClick={() => toast('Archive not implemented')}>
+                  <ArchiveIcon className="mr-2 h-4 w-4" /> Archive
+                </Button>
+              </div>
+            </PopoverContent>
+          </Popover>
+        )}
         <div className="ml-auto flex items-center space-x-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
