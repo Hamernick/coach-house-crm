@@ -441,7 +441,7 @@ export function ContactDrawer({ open, onOpenChange, contact, onSave, onDelete }:
                   />
                 </div>
                 {altEmailFields.map((field, index) => (
-                  <div key={field.id} className="flex space-x-2">
+                  <div key={field.id} className="flex items-end space-x-2">
                     <div className="flex-1 space-y-2">
                       <Label htmlFor={`alternateEmails.${index}`}>{`Alternate Email ${index + 1}`}</Label>
                       <Input
@@ -490,7 +490,7 @@ export function ContactDrawer({ open, onOpenChange, contact, onSave, onDelete }:
               <Separator className="my-4" />
               <div className="grid gap-4">
                 {phoneFields.map((field, index) => (
-                  <div key={field.id} className="flex space-x-2">
+                  <div key={field.id} className="flex items-end space-x-2">
                     <div className="flex-1 space-y-2">
                       <Label htmlFor={`phoneNumbers.${index}`}>{`Phone Number ${index + 1}`}</Label>
                       <Input
