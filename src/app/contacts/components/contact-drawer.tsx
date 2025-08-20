@@ -50,6 +50,15 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableFooter,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 
 function formatDate(date: Date | undefined) {
   if (!date) {
@@ -141,6 +150,7 @@ export function ContactDrawer({ open, onOpenChange, contact, onSave, onDelete }:
     return (first + last).toUpperCase() || "CN"
   }, [contact])
   const avatarSrc = (contact as { avatar?: string } | null)?.avatar
+  const donations = watch("donations") ?? []
 
   const [dobOpen, setDobOpen] = React.useState(false)
   const initialDob = contact?.dateOfBirth
@@ -245,6 +255,9 @@ export function ContactDrawer({ open, onOpenChange, contact, onSave, onDelete }:
               </TabsTrigger>
               <TabsTrigger value="preferences" className={tabTriggerClass}>
                 Preferences
+              </TabsTrigger>
+              <TabsTrigger value="donations" className={tabTriggerClass}>
+                Donations
               </TabsTrigger>
               <TabsTrigger value="documents" className={tabTriggerClass}>
                 Documents
@@ -551,6 +564,41 @@ export function ContactDrawer({ open, onOpenChange, contact, onSave, onDelete }:
                   <Checkbox {...register("doNotEmail")} /> <span>Do not email</span>
                 </div>
               </div>
+            </TabsContent>
+            <TabsContent
+              value="donations"
+              className="space-y-4 overflow-y-auto p-4"
+            >
+              {donations.length > 0 ? (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Date</TableHead>
+                      <TableHead className="text-right">Amount</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {donations.map((donation, index) => (
+                      <TableRow key={index}>
+                        <TableCell>{donation.date ?? ""}</TableCell>
+                        <TableCell className="text-right">
+                          ${donation.amount.toFixed(2)}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                  <TableFooter>
+                    <TableRow>
+                      <TableCell className="font-semibold">Total</TableCell>
+                      <TableCell className="text-right font-semibold">
+                        ${donations.reduce((sum, d) => sum + d.amount, 0).toFixed(2)}
+                      </TableCell>
+                    </TableRow>
+                  </TableFooter>
+                </Table>
+              ) : (
+                <p className="text-sm text-muted-foreground">No donations.</p>
+              )}
             </TabsContent>
             <TabsContent
               value="documents"
