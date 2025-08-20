@@ -128,41 +128,62 @@ export function ContactDrawer({ open, onOpenChange, contact, onSave }: ContactDr
               placeholder="Select roles"
             />
           </div>
-          <div className="grid gap-2">
-            <Input placeholder="Honorific" {...register("honorific")} />
+          <div className="grid md:grid-cols-2 gap-4">
+            <Input
+              placeholder="Honorific"
+              className="md:col-span-2"
+              {...register("honorific")}
+            />
             <Input placeholder="First Name" {...register("firstName")} />
-            <Input placeholder="Middle Name" {...register("middleName")} />
             <Input placeholder="Last Name" {...register("lastName")} />
-            <Input placeholder="Aliases" {...register("aliases")} />
+            <Input
+              placeholder="Middle Name"
+              className="md:col-span-2"
+              {...register("middleName")}
+            />
+            <Input
+              placeholder="Aliases"
+              className="md:col-span-2"
+              {...register("aliases")}
+            />
             <Input
               placeholder="How to Credit Publicly"
+              className="md:col-span-2"
               {...register("howToCreditPublicly")}
             />
-            <Select
-              value={watch("pronouns")}
-              onValueChange={(v) => setValue("pronouns", v as Contact["pronouns"])}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Pronouns" />
-              </SelectTrigger>
-              <SelectContent>
-                {pronounOptions.map((p) => (
-                  <SelectItem key={p} value={p}>
-                    {p}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="md:col-span-2">
+              <Select
+                value={watch("pronouns")}
+                onValueChange={(v) =>
+                  setValue("pronouns", v as Contact["pronouns"])
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Pronouns" />
+                </SelectTrigger>
+                <SelectContent>
+                  {pronounOptions.map((p) => (
+                    <SelectItem key={p} value={p}>
+                      {p}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <Input placeholder="Job Title" {...register("jobTitle")} />
             <Input
               placeholder="Company / Organization Name"
               {...register("company")}
             />
           </div>
-          <div className="grid gap-2">
-            <Input placeholder="Primary Email" {...register("primaryEmail")} />
+          <div className="grid md:grid-cols-2 gap-4">
+            <Input
+              placeholder="Primary Email"
+              className="md:col-span-2"
+              {...register("primaryEmail")}
+            />
             {altEmailFields.map((field, index) => (
-              <div key={field.id} className="flex space-x-2">
+              <div key={field.id} className="flex space-x-2 md:col-span-2">
                 <Input
                   className="flex-1"
                   placeholder="Alternate Email"
@@ -183,6 +204,7 @@ export function ContactDrawer({ open, onOpenChange, contact, onSave }: ContactDr
                 variant="outline"
                 size="sm"
                 onClick={() => appendEmail("")}
+                className="md:col-span-2"
               >
                 Add another email
               </Button>
@@ -193,9 +215,9 @@ export function ContactDrawer({ open, onOpenChange, contact, onSave }: ContactDr
               {...register("socialMedia")}
             />
           </div>
-          <div className="grid gap-2">
+          <div className="grid md:grid-cols-2 gap-4">
             {phoneFields.map((field, index) => (
-              <div key={field.id} className="flex space-x-2">
+              <div key={field.id} className="flex space-x-2 md:col-span-2">
                 <Input
                   className="flex-1"
                   placeholder="Phone Number"
@@ -216,12 +238,13 @@ export function ContactDrawer({ open, onOpenChange, contact, onSave }: ContactDr
                 variant="outline"
                 size="sm"
                 onClick={() => appendPhone("")}
+                className="md:col-span-2"
               >
                 Add phone number
               </Button>
             )}
           </div>
-          <div className="grid gap-2">
+          <div className="grid md:grid-cols-2 gap-4">
             <Input
               type="date"
               placeholder="Date of Birth"
