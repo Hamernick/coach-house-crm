@@ -16,12 +16,10 @@ import {
 import { DndContext, DragEndEvent } from "@dnd-kit/core"
 import {
   SortableContext,
-  verticalListSortingStrategy,
   horizontalListSortingStrategy,
   arrayMove,
 } from "@dnd-kit/sortable"
 import {
-  ChevronsUpDown,
   Columns as ColumnsIcon,
   Plus,
   ChevronsLeft,
@@ -66,7 +64,6 @@ import {
 import { ContactDrawer } from "./components/contact-drawer"
 import { RowActions } from "./components/row-actions"
 import { DraggableColumnHeader } from "./components/draggable-column-header"
-import { DraggableRow } from "./components/draggable-row"
 
 interface ContactsDataTableProps {
   data: Contact[]
@@ -151,23 +148,8 @@ export function ContactsDataTable({ data }: ContactsDataTableProps) {
         enableHiding: false,
       },
       {
-        id: "drag",
-        header: "",
-        cell: () => null,
-        enableSorting: false,
-        enableHiding: false,
-      },
-      {
         accessorKey: "type",
-        header: ({ column }) => (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            Type
-            <ChevronsUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        ),
+        header: "Type",
         meta: { label: "Type" },
       },
       {
@@ -183,15 +165,7 @@ export function ContactsDataTable({ data }: ContactsDataTableProps) {
       },
       {
         accessorKey: "firstName",
-        header: ({ column }) => (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            First Name
-            <ChevronsUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        ),
+        header: "First Name",
         cell: ({ row }) => {
           const c = row.original
           return (
@@ -239,15 +213,7 @@ export function ContactsDataTable({ data }: ContactsDataTableProps) {
       },
       {
         accessorKey: "primaryEmail",
-        header: ({ column }) => (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            Email
-            <ChevronsUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        ),
+        header: "Email",
         meta: { label: "Email" },
       },
       {
@@ -379,21 +345,6 @@ export function ContactsDataTable({ data }: ContactsDataTableProps) {
     })
   }
 
-  const handleRowDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event
-    if (!over || active.id === over.id) return
-    setContacts((prev) => {
-      const oldIndex = prev.findIndex((c) => c.id === active.id)
-      const newIndex = prev.findIndex((c) => c.id === over.id)
-      return arrayMove(prev, oldIndex, newIndex)
-    })
-  }
-
-  const handleDragEnd = (event: DragEndEvent) => {
-    handleColumnDragEnd(event)
-    handleRowDragEnd(event)
-  }
-
   const handleAddNew = () => {
     openDrawer(createEmptyContact())
   }
@@ -469,58 +420,62 @@ export function ContactsDataTable({ data }: ContactsDataTableProps) {
         </div>
       </div>
       <div className="rounded-md border overflow-hidden">
-        <DndContext onDragEnd={handleDragEnd}>
-          <SortableContext
-            items={table.getRowModel().rows.map((row) => row.id)}
-            strategy={verticalListSortingStrategy}
-          >
-            <Table>
-              <TableHeader>
-                {table.getHeaderGroups().map((headerGroup) => (
-                  <SortableContext
-                    key={headerGroup.id}
-                    items={columnOrder.filter(
-                      (id) =>
-                        !["select", "drag", "actions"].includes(id) &&
-                        table.getColumn(id)?.getIsVisible()
-                    )}
-                    strategy={horizontalListSortingStrategy}
-                  >
-                    <TableRow className="bg-muted">
-                      {headerGroup.headers.map((header) => {
-                        const id = header.column.id
-                        return ["select", "drag", "actions"].includes(id) ? (
-                          <TableHead key={header.id}>
-                            {header.isPlaceholder
-                              ? null
-                              : flexRender(
-                                  header.column.columnDef.header,
-                                  header.getContext()
-                                )}
-                          </TableHead>
-                        ) : (
-                          <DraggableColumnHeader key={header.id} header={header} />
-                        )
-                      })}
-                    </TableRow>
-                  </SortableContext>
-                ))}
-              </TableHeader>
-              <TableBody>
-                {table.getRowModel().rows?.length ? (
-                  table.getRowModel().rows.map((row) => (
-                    <DraggableRow key={row.id} row={row} />
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={columns.length} className="h-24 text-center">
-                      No results.
-                    </TableCell>
+        <DndContext onDragEnd={handleColumnDragEnd}>
+          <Table>
+            <TableHeader>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <SortableContext
+                  key={headerGroup.id}
+                  items={columnOrder.filter(
+                    (id) =>
+                      !["select", "actions"].includes(id) &&
+                      table.getColumn(id)?.getIsVisible()
+                  )}
+                  strategy={horizontalListSortingStrategy}
+                >
+                  <TableRow className="bg-muted">
+                    {headerGroup.headers.map((header) => {
+                      const id = header.column.id
+                      return ["select", "actions"].includes(id) ? (
+                        <TableHead key={header.id}>
+                          {header.isPlaceholder
+                            ? null
+                            : flexRender(
+                                header.column.columnDef.header,
+                                header.getContext()
+                              )}
+                        </TableHead>
+                      ) : (
+                        <DraggableColumnHeader key={header.id} header={header} />
+                      )
+                    })}
                   </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </SortableContext>
+                </SortableContext>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {table.getRowModel().rows?.length ? (
+                table.getRowModel().rows.map((row) => (
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && "selected"}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={columns.length} className="h-24 text-center">
+                    No results.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
         </DndContext>
       </div>
       <div className="flex items-center py-4">
