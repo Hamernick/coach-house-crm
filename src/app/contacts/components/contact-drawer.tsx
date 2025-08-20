@@ -174,7 +174,7 @@ export function ContactDrawer({ open, onOpenChange, contact, onSave, onDelete }:
   })
 
   const tabTriggerClass =
-    "flex-none rounded-none border-0 border-b-2 border-transparent bg-transparent px-4 py-2 text-sm font-medium text-muted-foreground shadow-none transition-all data-[state=active]:border-b-black dark:data-[state=active]:border-b-white data-[state=active]:bg-transparent dark:data-[state=active]:bg-transparent data-[state=active]:font-semibold data-[state=active]:text-foreground data-[state=active]:shadow-none"
+    "flex-none rounded-none border-0 border-b-2 border-transparent bg-transparent px-3 py-2 text-sm font-medium text-muted-foreground shadow-none transition-all data-[state=active]:border-b-black dark:data-[state=active]:border-b-white data-[state=active]:bg-transparent dark:data-[state=active]:bg-transparent data-[state=active]:font-semibold data-[state=active]:text-foreground data-[state=active]:shadow-none"
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange} direction={isMobile ? "bottom" : "right"}>
