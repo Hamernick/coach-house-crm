@@ -93,6 +93,7 @@ export function ContactsDataTable({ data }: ContactsDataTableProps) {
     alternateEmails: [],
     phoneNumbers: [""],
     mailingLists: [],
+    attribution: "",
     doNotEmail: false,
   }), [])
 
@@ -157,6 +158,30 @@ export function ContactsDataTable({ data }: ContactsDataTableProps) {
         enableHiding: false,
       },
       {
+        accessorKey: "type",
+        header: ({ column }) => (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Type
+            <ChevronsUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        ),
+        meta: { label: "Type" },
+      },
+      {
+        accessorKey: "roles",
+        header: "Roles",
+        cell: ({ row }) => row.original.roles?.join(", ") ?? "",
+        meta: { label: "Roles" },
+      },
+      {
+        accessorKey: "honorific",
+        header: "Honorific",
+        meta: { label: "Honorific" },
+      },
+      {
         accessorKey: "firstName",
         header: ({ column }) => (
           <Button
@@ -171,10 +196,46 @@ export function ContactsDataTable({ data }: ContactsDataTableProps) {
           const c = row.original
           return (
             <Button variant="link" onClick={() => openDrawer(c)}>
-              {`${c.firstName} ${c.lastName ?? ""}`.trim()}
+              {c.firstName}
             </Button>
           )
         },
+        meta: { label: "First Name" },
+      },
+      {
+        accessorKey: "middleName",
+        header: "Middle Name",
+        meta: { label: "Middle Name" },
+      },
+      {
+        accessorKey: "lastName",
+        header: "Last Name",
+        meta: { label: "Last Name" },
+      },
+      {
+        accessorKey: "aliases",
+        header: "Aliases / Other Names",
+        meta: { label: "Aliases / Other Names" },
+      },
+      {
+        accessorKey: "attribution",
+        header: "How to Credit Publicly?",
+        meta: { label: "Attribution" },
+      },
+      {
+        accessorKey: "pronouns",
+        header: "Pronouns",
+        meta: { label: "Pronouns" },
+      },
+      {
+        accessorKey: "jobTitle",
+        header: "Job Title",
+        meta: { label: "Job Title" },
+      },
+      {
+        accessorKey: "company",
+        header: "Company / Organization Name",
+        meta: { label: "Company / Organization Name" },
       },
       {
         accessorKey: "primaryEmail",
@@ -187,24 +248,71 @@ export function ContactsDataTable({ data }: ContactsDataTableProps) {
             <ChevronsUpDown className="ml-2 h-4 w-4" />
           </Button>
         ),
-        meta: { label: "Primary Email" },
+        meta: { label: "Email" },
       },
       {
-        accessorKey: "company",
-        header: "Company",
-        meta: { label: "Company" },
+        accessorKey: "alternateEmails",
+        header: "Alternate email addresses",
+        cell: ({ row }) => row.original.alternateEmails?.join(", ") ?? "",
+        meta: { label: "Alternate email addresses" },
       },
       {
-        accessorKey: "type",
-        header: ({ column }) => (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            Type
-            <ChevronsUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        ),
+        accessorKey: "website",
+        header: "Website",
+        meta: { label: "Website" },
+      },
+      {
+        id: "country",
+        accessorFn: (row) => row.primaryAddress?.country ?? "",
+        header: "Country",
+        meta: { label: "Country" },
+      },
+      {
+        id: "street",
+        accessorFn: (row) => row.primaryAddress?.street ?? "",
+        header: "Street Address",
+        meta: { label: "Street Address" },
+      },
+      {
+        id: "city",
+        accessorFn: (row) => row.primaryAddress?.city ?? "",
+        header: "City",
+        meta: { label: "City" },
+      },
+      {
+        id: "state",
+        accessorFn: (row) => row.primaryAddress?.state ?? "",
+        header: "State / Region",
+        meta: { label: "State / Region" },
+      },
+      {
+        id: "zip",
+        accessorFn: (row) => row.primaryAddress?.zip ?? "",
+        header: "Zip / Postal Code",
+        meta: { label: "Zip / Postal Code" },
+      },
+      {
+        id: "phone1",
+        accessorFn: (row) => row.phoneNumbers?.[0] ?? "",
+        header: "Phone Number 1",
+        meta: { label: "Phone Number 1" },
+      },
+      {
+        id: "phone2",
+        accessorFn: (row) => row.phoneNumbers?.[1] ?? "",
+        header: "Phone Number 2",
+        meta: { label: "Phone Number 2" },
+      },
+      {
+        id: "phone3",
+        accessorFn: (row) => row.phoneNumbers?.[2] ?? "",
+        header: "Phone Number 3",
+        meta: { label: "Phone Number 3" },
+      },
+      {
+        accessorKey: "dateOfBirth",
+        header: "Date of Birth",
+        meta: { label: "Date of Birth" },
       },
       {
         accessorKey: "documents",
