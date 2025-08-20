@@ -203,16 +203,12 @@ export function ContactsDataTable({ data }: ContactsDataTableProps) {
             <ChevronsUpDown className="ml-2 h-4 w-4" />
           </Button>
         ),
+        meta: { label: "Primary Email" },
       },
       {
         accessorKey: "company",
         header: "Company",
         meta: { label: "Company" },
-      },
-      {
-        accessorKey: "primaryEmail",
-        header: "Primary Email",
-        meta: { label: "Primary Email" },
       },
       {
         accessorKey: "type",
@@ -251,7 +247,9 @@ export function ContactsDataTable({ data }: ContactsDataTableProps) {
   )
 
   React.useEffect(() => {
-    setColumnOrder(columns.map((c) => c.id!))
+    setColumnOrder(
+      columns.map((c) => (c.id ?? (c.accessorKey as string))!)
+    )
   }, [columns])
 
   const table = useReactTable({
@@ -278,24 +276,28 @@ export function ContactsDataTable({ data }: ContactsDataTableProps) {
 
   const handleColumnDragEnd = (event: DragEndEvent) => {
     const { active, over } = event
-    if (active.id !== over?.id) {
-      setColumnOrder((cols) => {
-        const oldIndex = cols.indexOf(active.id as string)
-        const newIndex = cols.indexOf(over?.id as string)
-        return arrayMove(cols, oldIndex, newIndex)
-      })
-    }
+    if (!over || active.id === over.id) return
+    if (!columnOrder.includes(active.id as string)) return
+    setColumnOrder((cols) => {
+      const oldIndex = cols.indexOf(active.id as string)
+      const newIndex = cols.indexOf(over.id as string)
+      return arrayMove(cols, oldIndex, newIndex)
+    })
+  }
+
+  const handleRowDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+    setContacts((prev) => {
+      const oldIndex = prev.findIndex((c) => c.id === active.id)
+      const newIndex = prev.findIndex((c) => c.id === over.id)
+      return arrayMove(prev, oldIndex, newIndex)
+    })
   }
 
   const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event
-    if (active.id !== over?.id) {
-      setContacts((prev) => {
-        const oldIndex = prev.findIndex((c) => c.id === active.id)
-        const newIndex = prev.findIndex((c) => c.id === over?.id)
-        return arrayMove(prev, oldIndex, newIndex)
-      })
-    }
+    handleColumnDragEnd(event)
+    handleRowDragEnd(event)
   }
 
   const handleAddNew = () => {
@@ -381,34 +383,33 @@ export function ContactsDataTable({ data }: ContactsDataTableProps) {
             <Table>
               <TableHeader>
                 {table.getHeaderGroups().map((headerGroup) => (
-                  <DndContext key={headerGroup.id} onDragEnd={handleColumnDragEnd}>
-                    <SortableContext
-                      items={columnOrder.filter(
-                        (id) =>
-                          !["select", "drag", "actions"].includes(id) &&
-                          table.getColumn(id)?.getIsVisible()
-                      )}
-                      strategy={horizontalListSortingStrategy}
-                    >
-                      <TableRow className="bg-muted">
-                        {headerGroup.headers.map((header) => {
-                          const id = header.column.id
-                          return ["select", "drag", "actions"].includes(id) ? (
-                            <TableHead key={header.id}>
-                              {header.isPlaceholder
-                                ? null
-                                : flexRender(
-                                    header.column.columnDef.header,
-                                    header.getContext()
-                                  )}
-                            </TableHead>
-                          ) : (
-                            <DraggableColumnHeader key={header.id} header={header} />
-                          )
-                        })}
-                      </TableRow>
-                    </SortableContext>
-                  </DndContext>
+                  <SortableContext
+                    key={headerGroup.id}
+                    items={columnOrder.filter(
+                      (id) =>
+                        !["select", "drag", "actions"].includes(id) &&
+                        table.getColumn(id)?.getIsVisible()
+                    )}
+                    strategy={horizontalListSortingStrategy}
+                  >
+                    <TableRow className="bg-muted">
+                      {headerGroup.headers.map((header) => {
+                        const id = header.column.id
+                        return ["select", "drag", "actions"].includes(id) ? (
+                          <TableHead key={header.id}>
+                            {header.isPlaceholder
+                              ? null
+                              : flexRender(
+                                  header.column.columnDef.header,
+                                  header.getContext()
+                                )}
+                          </TableHead>
+                        ) : (
+                          <DraggableColumnHeader key={header.id} header={header} />
+                        )
+                      })}
+                    </TableRow>
+                  </SortableContext>
                 ))}
               </TableHeader>
               <TableBody>
