@@ -12,7 +12,6 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
-  Row,
 } from "@tanstack/react-table"
 import { DndContext, DragEndEvent } from "@dnd-kit/core"
 import {
@@ -20,26 +19,19 @@ import {
   verticalListSortingStrategy,
   horizontalListSortingStrategy,
   arrayMove,
-  useSortable,
 } from "@dnd-kit/sortable"
-import { CSS } from "@dnd-kit/utilities"
 import {
   ChevronsUpDown,
-  GripVertical,
   Columns as ColumnsIcon,
   Plus,
   ChevronsLeft,
   ChevronLeft,
   ChevronRight,
   ChevronsRight,
-  MoreVertical,
 } from "lucide-react"
 import { toast } from "sonner"
-import { useForm, useFieldArray } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
 
-import { useIsMobile } from "@/hooks/use-mobile"
-import { contactSchema, type Contact } from "./data"
+import { type Contact } from "./data"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -48,7 +40,6 @@ import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import {
@@ -57,24 +48,12 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import {
-  Drawer,
-  DrawerContent,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerClose,
-} from "@/components/ui/drawer"
-import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Label } from "@/components/ui/label"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { MultiSelect } from "@/components/ui/multi-select"
 import {
   Table,
   TableBody,
@@ -83,6 +62,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+
+import { ContactDrawer } from "./components/contact-drawer"
+import { RowActions } from "./components/row-actions"
+import { DraggableColumnHeader } from "./components/draggable-column-header"
+import { DraggableRow } from "./components/draggable-row"
 
 interface ContactsDataTableProps {
   data: Contact[]
@@ -248,7 +232,9 @@ export function ContactsDataTable({ data }: ContactsDataTableProps) {
 
   React.useEffect(() => {
     setColumnOrder(
-      columns.map((c) => (c.id ?? (c.accessorKey as string))!)
+      columns.map(
+        (c) => (c.id ?? ((c as { accessorKey?: string }).accessorKey as string))!
+      )
     )
   }, [columns])
 
@@ -504,341 +490,3 @@ export function ContactsDataTable({ data }: ContactsDataTableProps) {
     </div>
   )
 }
-
-interface RowActionsProps {
-  onView: () => void
-  onEdit: () => void
-  onDelete: () => void
-}
-
-function RowActions({ onView, onEdit, onDelete }: RowActionsProps) {
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="h-8 w-8 p-0">
-          <MoreVertical className="h-4 w-4" />
-          <span className="sr-only">Open menu</span>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={onView}>View Details</DropdownMenuItem>
-        <DropdownMenuItem onClick={onEdit}>Edit</DropdownMenuItem>
-        <DropdownMenuItem className="text-destructive" onClick={onDelete}>
-          Delete
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  )
-}
-
-interface DraggableColumnHeaderProps {
-  header: Header<Contact, unknown>
-}
-
-function DraggableColumnHeader({ header }: DraggableColumnHeaderProps) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
-    useSortable({ id: header.column.id })
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-  }
-  return (
-    <TableHead
-      ref={setNodeRef}
-      style={style}
-      className={isDragging ? "opacity-50" : ""}
-      {...attributes}
-      {...listeners}
-    >
-      {header.isPlaceholder
-        ? null
-        : flexRender(header.column.columnDef.header, header.getContext())}
-    </TableHead>
-  )
-}
-
-interface DraggableRowProps {
-  row: Row<Contact>
-}
-
-function DraggableRow({ row }: DraggableRowProps) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
-    useSortable({ id: row.id })
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-  }
-  return (
-    <TableRow
-      ref={setNodeRef}
-      style={style}
-      className={isDragging ? "opacity-50" : ""}
-      data-state={row.getIsSelected() && "selected"}
-    >
-      {row.getVisibleCells().map((cell) => {
-        if (cell.column.id === "drag") {
-          return (
-            <TableCell key={cell.id}>
-              <Button
-                variant="ghost"
-                className="h-8 w-8 p-0 cursor-grab"
-                {...attributes}
-                {...listeners}
-              >
-                <GripVertical className="h-4 w-4" />
-                <span className="sr-only">Drag row</span>
-              </Button>
-            </TableCell>
-          )
-        }
-        return (
-          <TableCell key={cell.id}>
-            {flexRender(cell.column.columnDef.cell, cell.getContext())}
-          </TableCell>
-        )
-      })}
-    </TableRow>
-  )
-}
-
-interface ContactDrawerProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  contact: Contact | null
-  onSave: (contact: Contact) => void
-}
-
-function ContactDrawer({ open, onOpenChange, contact, onSave }: ContactDrawerProps) {
-  const isMobile = useIsMobile()
-  const form = useForm<Contact>({
-    resolver: zodResolver<Contact>(contactSchema),
-    defaultValues: contact ?? {
-      id: "",
-      type: "Individual",
-      roles: [],
-      firstName: "",
-      middleName: "",
-      lastName: "",
-      primaryEmail: "",
-      alternateEmails: [],
-      phoneNumbers: [""],
-      mailingLists: [],
-      doNotEmail: false,
-    },
-  })
-
-  React.useEffect(() => {
-    if (contact) {
-      form.reset(contact)
-    }
-  }, [contact, form])
-
-  const {
-    control,
-    register,
-    handleSubmit,
-    watch,
-    setValue,
-  } = form
-
-  const { fields: altEmailFields, append: appendEmail, remove: removeEmail } =
-    useFieldArray<Contact>({
-      control,
-      name: "alternateEmails",
-    })
-
-  const { fields: phoneFields, append: appendPhone, remove: removePhone } =
-    useFieldArray<Contact>({
-      control,
-      name: "phoneNumbers",
-    })
-
-  const roles = ["Donor", "Volunteer", "Board"]
-  const pronounOptions = ["He/Him", "She/Her", "They/Them", "Other"]
-  const mailingListOptions = ["Newsletter", "Events", "Volunteers"]
-
-  const onSubmit = handleSubmit((values: Contact) => {
-    onSave(values)
-  })
-
-  return (
-    <Drawer open={open} onOpenChange={onOpenChange} direction={isMobile ? "bottom" : "right"}>
-      <DrawerContent className="max-h-screen">
-        <DrawerHeader>
-          <DrawerTitle>{contact ? "Edit Contact" : "New Contact"}</DrawerTitle>
-          <DrawerDescription>Manage contact details</DrawerDescription>
-        </DrawerHeader>
-        <form
-          id="contact-form"
-          onSubmit={onSubmit}
-          className="overflow-y-auto px-4 pb-4 space-y-4"
-        >
-          <div className="space-y-2">
-            <Label>Type</Label>
-            <RadioGroup
-              className="flex flex-wrap gap-2"
-              value={watch("type")}
-              onValueChange={(v) =>
-                setValue("type", v as Contact["type"])
-              }
-            >
-              {contactSchema.shape.type.options.map((opt) => (
-                <div key={opt} className="flex items-center space-x-2">
-                  <RadioGroupItem value={opt} id={`type-${opt}`} />
-                  <Label htmlFor={`type-${opt}`}>{opt}</Label>
-                </div>
-              ))}
-            </RadioGroup>
-          </div>
-          <div className="space-y-2">
-            <Label>Roles</Label>
-            <MultiSelect
-              options={roles.map((r) => ({ label: r, value: r }))}
-              value={watch("roles") ?? []}
-              onChange={(vals) => setValue("roles", vals)}
-              placeholder="Select roles"
-            />
-          </div>
-          <div className="grid gap-2">
-            <Input placeholder="Honorific" {...register("honorific")} />
-            <Input placeholder="First Name" {...register("firstName")} />
-            <Input placeholder="Middle Name" {...register("middleName")} />
-            <Input placeholder="Last Name" {...register("lastName")} />
-            <Input placeholder="Aliases" {...register("aliases")} />
-            <Input
-              placeholder="How to Credit Publicly"
-              {...register("howToCreditPublicly")}
-            />
-            <Select
-              value={watch("pronouns")}
-              onValueChange={(v) => setValue("pronouns", v as Contact["pronouns"])}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Pronouns" />
-              </SelectTrigger>
-              <SelectContent>
-                {pronounOptions.map((p) => (
-                  <SelectItem key={p} value={p}>
-                    {p}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Input placeholder="Job Title" {...register("jobTitle")} />
-            <Input
-              placeholder="Company / Organization Name"
-              {...register("company")}
-            />
-          </div>
-          <div className="grid gap-2">
-            <Input
-              placeholder="Primary Email"
-              {...register("primaryEmail")}
-            />
-            {altEmailFields.map((field, index) => (
-              <div key={field.id} className="flex space-x-2">
-                <Input
-                  className="flex-1"
-                  placeholder="Alternate Email"
-                  {...register(`alternateEmails.${index}` as const)}
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={() => removeEmail(index)}
-                >
-                  Remove
-                </Button>
-              </div>
-            ))}
-            {altEmailFields.length < 2 && (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => appendEmail("")}
-              >
-                Add another email
-              </Button>
-            )}
-            <Input placeholder="Website" {...register("website")} />
-            <Input
-              placeholder="Social Media"
-              {...register("socialMedia")}
-            />
-          </div>
-          <div className="grid gap-2">
-            {phoneFields.map((field, index) => (
-              <div key={field.id} className="flex space-x-2">
-                <Input
-                  className="flex-1"
-                  placeholder="Phone Number"
-                  {...register(`phoneNumbers.${index}` as const)}
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={() => removePhone(index)}
-                >
-                  Remove
-                </Button>
-              </div>
-            ))}
-            {phoneFields.length < 3 && (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => appendPhone("")}
-              >
-                Add phone number
-              </Button>
-            )}
-          </div>
-          <div className="grid gap-2">
-            <Input
-              type="date"
-              placeholder="Date of Birth"
-              {...register("dateOfBirth")}
-            />
-            <Input type="file" {...register("documents")} multiple />
-          </div>
-          <div className="space-y-2">
-            <Label>Mailing Lists</Label>
-            {mailingListOptions.map((list) => (
-              <div key={list} className="flex items-center space-x-2">
-                <Checkbox
-                  checked={watch("mailingLists")?.includes(list)}
-                  onCheckedChange={(checked) => {
-                    const lists = watch("mailingLists") ?? []
-                    if (checked) {
-                      setValue("mailingLists", [...lists, list])
-                    } else {
-                      setValue(
-                        "mailingLists",
-                        lists.filter((l) => l !== list)
-                      )
-                    }
-                  }}
-                />
-                <span>{list}</span>
-              </div>
-            ))}
-            <div className="flex items-center space-x-2">
-              <Checkbox {...register("doNotEmail")}/> <span>Do not email</span>
-            </div>
-          </div>
-        </form>
-        <DrawerFooter className="border-t p-4">
-          <Button type="submit" form="contact-form">
-            Save
-          </Button>
-          <DrawerClose asChild>
-            <Button variant="outline">Cancel</Button>
-          </DrawerClose>
-        </DrawerFooter>
-      </DrawerContent>
-    </Drawer>
-  )
-}
-
