@@ -7,7 +7,8 @@ import { AppSidebar } from '@/components/app-sidebar'
 
 export function LayoutWrapper({ children }: { children: ReactNode }) {
   const pathname = usePathname()
-  const showSidebar = pathname !== '/' && pathname !== '/login'
+  const showSidebar =
+    pathname !== '/' && pathname !== '/login' && pathname !== '/signup'
 
   if (!showSidebar) {
     return <>{children}</>
