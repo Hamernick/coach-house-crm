@@ -17,7 +17,7 @@ export const contactSchema = z.object({
   middleName: z.string().optional(),
   lastName: z.string().optional(),
   aliases: z.string().optional(),
-  howToCreditPublicly: z.string().optional(),
+  attribution: z.string().optional(),
   pronouns: z.enum(["He/Him", "She/Her", "They/Them", "Other"]).optional(),
   jobTitle: z.string().optional(),
   company: z.string().optional(),

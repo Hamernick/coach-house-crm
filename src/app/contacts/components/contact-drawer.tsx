@@ -55,6 +55,7 @@ export function ContactDrawer({ open, onOpenChange, contact, onSave }: ContactDr
       alternateEmails: [],
       phoneNumbers: [""],
       mailingLists: [],
+      attribution: "",
       doNotEmail: false,
     },
   })
@@ -207,8 +208,8 @@ export function ContactDrawer({ open, onOpenChange, contact, onSave }: ContactDr
                 <Input placeholder="Last Name" {...register("lastName")} />
                 <Input placeholder="Aliases" {...register("aliases")} />
                 <Input
-                  placeholder="How to Credit Publicly"
-                  {...register("howToCreditPublicly")}
+                  placeholder="How to Credit Publicly?"
+                  {...register("attribution")}
                 />
                 <Select
                   value={watch("pronouns")}
