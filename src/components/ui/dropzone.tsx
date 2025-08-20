@@ -2,6 +2,14 @@
 
 import * as React from "react"
 import { UploadCloud, X } from "lucide-react"
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 
 interface DropzoneProps {
   files?: File[]
@@ -31,7 +39,7 @@ export function Dropzone({ files = [], onFiles }: DropzoneProps) {
 
   return (
     <div
-      className="flex flex-col items-center justify-center rounded-md border-2 border-dashed p-8 text-center text-sm cursor-pointer"
+      className="flex min-h-[200px] flex-col items-center justify-center rounded-md border-2 border-dashed p-10 text-center text-sm cursor-pointer"
       onDragOver={(e) => e.preventDefault()}
       onDrop={(e) => {
         e.preventDefault()
@@ -50,24 +58,36 @@ export function Dropzone({ files = [], onFiles }: DropzoneProps) {
         onChange={(e) => handleFiles(e.target.files)}
       />
       {files.length > 0 && (
-        <ul className="mt-4 w-full space-y-2 text-left text-xs">
+        <ul className="mt-4 grid w-full grid-cols-1 gap-4 sm:grid-cols-2">
           {files.map((file, index) => (
-            <li
-              key={file.name}
-              className="flex items-center justify-between rounded border px-2 py-1"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <span className="truncate">{file.name}</span>
-              <button
-                type="button"
-                className="ml-2 rounded p-1 hover:bg-muted"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  removeFile(index)
-                }}
-              >
-                <X className="h-3 w-3" />
-              </button>
+            <li key={file.name} onClick={(e) => e.stopPropagation()}>
+              <Card className="overflow-hidden">
+                <CardContent className="p-0">
+                  <img
+                    src={URL.createObjectURL(file)}
+                    alt={file.name}
+                    className="h-40 w-full object-cover"
+                  />
+                </CardContent>
+                <CardFooter className="justify-between">
+                  <div className="flex flex-col items-start">
+                    <CardTitle className="text-sm">{file.name}</CardTitle>
+                    <CardDescription>{Math.round(file.size / 1024)} KB</CardDescription>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      removeFile(index)
+                    }}
+                  >
+                    <X className="h-4 w-4" />
+                    <span className="sr-only">Remove</span>
+                  </Button>
+                </CardFooter>
+              </Card>
             </li>
           ))}
         </ul>
