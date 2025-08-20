@@ -28,6 +28,10 @@ import {
   ChevronLeft,
   ChevronRight,
   ChevronsRight,
+  UserPlus,
+  Upload,
+  Download,
+  FileDown,
 } from "lucide-react"
 import { toast } from "sonner"
 
@@ -447,21 +451,28 @@ export function ContactsDataTable({ data }: ContactsDataTableProps) {
             <PopoverContent align="end" className="w-48">
               <div className="flex flex-col">
                 <Button variant="ghost" className="justify-start" onClick={handleAddNew}>
-                  Add New Contact
+                  <UserPlus className="mr-2 h-4 w-4" /> Add New Contact
                 </Button>
                 <Button
                   variant="ghost"
                   className="justify-start"
                   onClick={() => toast("Upload not implemented")}
                 >
-                  Upload .csv
+                  <Upload className="mr-2 h-4 w-4" /> Upload .csv
                 </Button>
                 <Button
                   variant="ghost"
                   className="justify-start"
                   onClick={() => toast("Download not implemented")}
                 >
-                  Download .csv
+                  <Download className="mr-2 h-4 w-4" /> Download .csv
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="justify-start"
+                  onClick={() => toast("Download template not implemented")}
+                >
+                  <FileDown className="mr-2 h-4 w-4" /> Download Template .csv
                 </Button>
               </div>
             </PopoverContent>
