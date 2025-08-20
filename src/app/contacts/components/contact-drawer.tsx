@@ -3,6 +3,7 @@
 import * as React from "react"
 import { useForm, useFieldArray, type Resolver } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { Mail, Phone } from "lucide-react"
 
 import { useIsMobile } from "@/hooks/use-mobile"
 import { contactSchema, type Contact } from "../data"
