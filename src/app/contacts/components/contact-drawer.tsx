@@ -184,30 +184,37 @@ export function ContactDrawer({ open, onOpenChange, contact, onSave, onDelete }:
             </>
           )}
         </DrawerHeader>
-        <form id="contact-form" onSubmit={onSubmit} className="h-full">
-          <Tabs defaultValue="details" className="flex h-full flex-col">
-            <TabsList className="border-b border-border px-4">
+        <form
+          id="contact-form"
+          onSubmit={onSubmit}
+          className="flex flex-1 flex-col overflow-hidden"
+        >
+          <Tabs
+            defaultValue="details"
+            className="flex flex-1 flex-col overflow-hidden"
+          >
+            <TabsList className="flex w-full border-b border-border bg-transparent p-0">
               <TabsTrigger
                 value="details"
-                className="rounded-none border-0 border-b-2 border-transparent bg-transparent px-4 py-2 text-sm font-medium text-muted-foreground transition-all data-[state=active]:border-white data-[state=active]:font-semibold data-[state=active]:text-foreground"
+                className="flex-none rounded-none border-b-2 border-transparent bg-transparent px-4 py-2 text-sm font-medium text-muted-foreground shadow-none transition-all data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:font-semibold data-[state=active]:text-foreground data-[state=active]:shadow-none"
               >
                 Details
               </TabsTrigger>
               <TabsTrigger
                 value="communication"
-                className="rounded-none border-0 border-b-2 border-transparent bg-transparent px-4 py-2 text-sm font-medium text-muted-foreground transition-all data-[state=active]:border-white data-[state=active]:font-semibold data-[state=active]:text-foreground"
+                className="flex-none rounded-none border-b-2 border-transparent bg-transparent px-4 py-2 text-sm font-medium text-muted-foreground shadow-none transition-all data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:font-semibold data-[state=active]:text-foreground data-[state=active]:shadow-none"
               >
                 Communication
               </TabsTrigger>
               <TabsTrigger
                 value="preferences"
-                className="rounded-none border-0 border-b-2 border-transparent bg-transparent px-4 py-2 text-sm font-medium text-muted-foreground transition-all data-[state=active]:border-white data-[state=active]:font-semibold data-[state=active]:text-foreground"
+                className="flex-none rounded-none border-b-2 border-transparent bg-transparent px-4 py-2 text-sm font-medium text-muted-foreground shadow-none transition-all data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:font-semibold data-[state=active]:text-foreground data-[state=active]:shadow-none"
               >
                 Preferences
               </TabsTrigger>
               <TabsTrigger
                 value="documents"
-                className="rounded-none border-0 border-b-2 border-transparent bg-transparent px-4 py-2 text-sm font-medium text-muted-foreground transition-all data-[state=active]:border-white data-[state=active]:font-semibold data-[state=active]:text-foreground"
+                className="flex-none rounded-none border-b-2 border-transparent bg-transparent px-4 py-2 text-sm font-medium text-muted-foreground shadow-none transition-all data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:font-semibold data-[state=active]:text-foreground data-[state=active]:shadow-none"
               >
                 Documents
               </TabsTrigger>
@@ -249,7 +256,12 @@ export function ContactDrawer({ open, onOpenChange, contact, onSave, onDelete }:
               <div className="grid gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="honorific">Honorific</Label>
-                  <Input id="honorific" placeholder="Ms." {...register("honorific")} />
+                  <Input
+                    id="honorific"
+                    className="sm:max-w-[200px]"
+                    placeholder="Ms."
+                    {...register("honorific")}
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="firstName">First Name</Label>
@@ -257,7 +269,12 @@ export function ContactDrawer({ open, onOpenChange, contact, onSave, onDelete }:
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="middleName">Middle Name</Label>
-                  <Input id="middleName" placeholder="A." {...register("middleName")} />
+                  <Input
+                    id="middleName"
+                    className="sm:max-w-[200px]"
+                    placeholder="A."
+                    {...register("middleName")}
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="lastName">Last Name</Label>
@@ -297,7 +314,12 @@ export function ContactDrawer({ open, onOpenChange, contact, onSave, onDelete }:
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="jobTitle">Job Title</Label>
-                  <Input id="jobTitle" placeholder="Program Director" {...register("jobTitle")} />
+                  <Input
+                    id="jobTitle"
+                    className="sm:max-w-sm"
+                    placeholder="Program Director"
+                    {...register("jobTitle")}
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="company">Company / Organization Name</Label>
@@ -310,6 +332,7 @@ export function ContactDrawer({ open, onOpenChange, contact, onSave, onDelete }:
                 <Input
                   type="date"
                   id="dateOfBirth"
+                  className="sm:max-w-[200px]"
                   placeholder="1990-01-01"
                   {...register("dateOfBirth")}
                 />

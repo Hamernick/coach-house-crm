@@ -9,18 +9,12 @@ interface DropzoneProps {
 }
 
 export function Dropzone({ files = [], onFiles }: DropzoneProps) {
-  const [localFiles, setLocalFiles] = React.useState<File[]>(files)
   const inputRef = React.useRef<HTMLInputElement>(null)
-
-  React.useEffect(() => {
-    setLocalFiles(files)
-  }, [files])
 
   const handleFiles = (fileList: FileList | null) => {
     if (!fileList) return
     const newFiles = Array.from(fileList)
-    const updated = [...localFiles, ...newFiles]
-    setLocalFiles(updated)
+    const updated = [...files, ...newFiles]
     onFiles?.(updated)
   }
 
@@ -43,9 +37,9 @@ export function Dropzone({ files = [], onFiles }: DropzoneProps) {
         className="hidden"
         onChange={(e) => handleFiles(e.target.files)}
       />
-      {localFiles.length > 0 && (
+      {files.length > 0 && (
         <ul className="mt-4 w-full text-left text-xs">
-          {localFiles.map((file) => (
+          {files.map((file) => (
             <li key={file.name}>{file.name}</li>
           ))}
         </ul>
