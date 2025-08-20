@@ -25,6 +25,9 @@ export function DraggableColumnHeader({ header }: DraggableColumnHeaderProps) {
   const SortIcon =
     sorted === "asc" ? ArrowUp : sorted === "desc" ? ArrowDown : ChevronsUpDown
 
+  const [mounted, setMounted] = React.useState(false)
+  React.useEffect(() => setMounted(true), [])
+
   return (
     <TableHead
       ref={setNodeRef}
@@ -35,8 +38,8 @@ export function DraggableColumnHeader({ header }: DraggableColumnHeaderProps) {
           ? header.column.getToggleSortingHandler()
           : undefined
       }
-      {...attributes}
-      {...listeners}
+      {...(mounted ? attributes : {})}
+      {...(mounted ? listeners : {})}
     >
       <div className="flex items-center">
         {header.isPlaceholder
