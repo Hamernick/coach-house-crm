@@ -111,6 +111,7 @@ export function ContactsDataTable({ data }: ContactsDataTableProps) {
     phoneNumbers: [""],
     mailingLists: [],
     attribution: "",
+    donations: [],
     doNotEmail: false,
   }), [])
 
@@ -230,6 +231,18 @@ export function ContactsDataTable({ data }: ContactsDataTableProps) {
         accessorKey: "company",
         header: "Company / Organization Name",
         meta: { label: "Company / Organization Name" },
+      },
+      {
+        id: "totalDonations",
+        accessorFn: (row) =>
+          row.donations?.reduce((sum, d) => sum + d.amount, 0) ?? 0,
+        header: "Total Donations",
+        cell: ({ row }) => {
+          const total =
+            row.original.donations?.reduce((sum, d) => sum + d.amount, 0) ?? 0
+          return `$${total.toFixed(2)}`
+        },
+        meta: { label: "Total Donations" },
       },
       {
         accessorKey: "primaryEmail",
