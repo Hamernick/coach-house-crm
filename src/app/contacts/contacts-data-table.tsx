@@ -32,6 +32,7 @@ import {
   FileDown,
   Trash,
   Archive as ArchiveIcon,
+  Box,
 } from "lucide-react"
 import { toast } from "sonner"
 
@@ -531,6 +532,29 @@ export function ContactsDataTable({ data }: ContactsDataTableProps) {
                     ))}
                   </TableRow>
                 ))
+              ) : contacts.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={columns.length}>
+                    <div className="flex h-80 flex-col items-center justify-center text-center">
+                      <Box className="mb-4 h-12 w-12 text-muted-foreground" />
+                      <h3 className="mb-1 text-lg font-semibold">No person records</h3>
+                      <p className="mb-6 text-sm text-muted-foreground">
+                        People records let you track individuals and contacts at a firm.
+                      </p>
+                      <div className="flex gap-2">
+                        <Button onClick={handleAddNew}>
+                          <UserPlus className="mr-2 h-4 w-4" /> Add a contact
+                        </Button>
+                        <Button
+                          variant="outline"
+                          onClick={() => toast("Upload not implemented")}
+                        >
+                          <Upload className="mr-2 h-4 w-4" /> Upload .csv
+                        </Button>
+                      </div>
+                    </div>
+                  </TableCell>
+                </TableRow>
               ) : (
                 <TableRow>
                   <TableCell colSpan={columns.length} className="h-24 text-center">

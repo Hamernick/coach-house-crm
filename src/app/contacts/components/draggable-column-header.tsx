@@ -4,7 +4,12 @@ import * as React from "react"
 import { Header, flexRender } from "@tanstack/react-table"
 import { useSortable } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
-import { ArrowDown, ArrowUp, ChevronsUpDown } from "lucide-react"
+import {
+  ArrowDown,
+  ArrowUp,
+  ChevronsUpDown,
+  GripVertical,
+} from "lucide-react"
 
 import { TableHead } from "@/components/ui/table"
 import { cn } from "@/lib/utils"
@@ -32,20 +37,31 @@ export function DraggableColumnHeader({ header }: DraggableColumnHeaderProps) {
     <TableHead
       ref={setNodeRef}
       style={style}
-      className={cn("cursor-pointer select-none", isDragging && "opacity-50")}
-      onClick={
-        header.column.getCanSort()
-          ? header.column.getToggleSortingHandler()
-          : undefined
-      }
-      {...(mounted ? attributes : {})}
-      {...(mounted ? listeners : {})}
+      className={cn(isDragging && "opacity-50")}
     >
       <div className="flex items-center">
-        {header.isPlaceholder
-          ? null
-          : flexRender(header.column.columnDef.header, header.getContext())}
-        {header.column.getCanSort() && <SortIcon className="ml-2 h-4 w-4" />}
+        <span
+          className="mr-2 cursor-grab"
+          {...(mounted ? attributes : {})}
+          {...(mounted ? listeners : {})}
+        >
+          <GripVertical className="h-4 w-4" />
+        </span>
+        <div
+          className="flex cursor-pointer select-none items-center"
+          onClick={
+            header.column.getCanSort()
+              ? header.column.getToggleSortingHandler()
+              : undefined
+          }
+        >
+          {header.isPlaceholder
+            ? null
+            : flexRender(header.column.columnDef.header, header.getContext())}
+          {header.column.getCanSort() && (
+            <SortIcon className="ml-2 h-4 w-4" />
+          )}
+        </div>
       </div>
     </TableHead>
   )
