@@ -360,7 +360,7 @@ export function ContactsDataTable({ data }: ContactsDataTableProps) {
           </Popover>
         </div>
       </div>
-      <div className="rounded-md border">
+      <div className="rounded-md border overflow-hidden">
         <DndContext onDragEnd={handleDragEnd}>
           <SortableContext
             items={table.getRowModel().rows.map((row) => row.id)}
