@@ -3,7 +3,7 @@
 import * as React from "react"
 import { useForm, useFieldArray, type Resolver } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Mail, Phone } from "lucide-react"
+import { Trash } from "lucide-react"
 
 import { useIsMobile } from "@/hooks/use-mobile"
 import { contactSchema, type Contact } from "../data"
@@ -22,6 +22,17 @@ import {
   DrawerClose,
 } from "@/components/ui/drawer"
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -29,18 +40,20 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { MultiSelect } from "@/components/ui/multi-select"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import { Separator } from "@/components/ui/separator"
+import { Dropzone } from "@/components/ui/dropzone"
 
 interface ContactDrawerProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   contact: Contact | null
   onSave: (contact: Contact) => void
+  onDelete?: (id: string) => void
 }
 
-export function ContactDrawer({ open, onOpenChange, contact, onSave }: ContactDrawerProps) {
+export function ContactDrawer({ open, onOpenChange, contact, onSave, onDelete }: ContactDrawerProps) {
   const isMobile = useIsMobile()
   const form = useForm<Contact>({
     resolver: zodResolver(contactSchema) as Resolver<Contact>,
@@ -131,31 +144,36 @@ export function ContactDrawer({ open, onOpenChange, contact, onSave }: ContactDr
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                {contact.primaryEmail && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8"
-                    asChild
-                  >
-                    <a href={`mailto:${contact.primaryEmail}`}>
-                      <Mail className="h-4 w-4" />
-                      <span className="sr-only">Email</span>
-                    </a>
-                  </Button>
-                )}
-                {contact.phoneNumbers?.[0] && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8"
-                    asChild
-                  >
-                    <a href={`tel:${contact.phoneNumbers[0]}`}>
-                      <Phone className="h-4 w-4" />
-                      <span className="sr-only">Call</span>
-                    </a>
-                  </Button>
+                {contact && (
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-destructive"
+                      >
+                        <Trash className="h-4 w-4" />
+                        <span className="sr-only">Delete</span>
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete contact?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This action cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          onClick={() => onDelete?.(contact.id)}
+                        >
+                          Delete
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 )}
               </div>
             </div>
@@ -168,97 +186,159 @@ export function ContactDrawer({ open, onOpenChange, contact, onSave }: ContactDr
         </DrawerHeader>
         <form id="contact-form" onSubmit={onSubmit} className="h-full">
           <Tabs defaultValue="details" className="flex h-full flex-col">
-            <TabsList className="px-4">
-              <TabsTrigger value="details">Details</TabsTrigger>
-              <TabsTrigger value="communication">Communication</TabsTrigger>
-              <TabsTrigger value="preferences">Preferences</TabsTrigger>
+            <TabsList className="border-b border-border px-4">
+              <TabsTrigger
+                value="details"
+                className="rounded-none border-0 border-b-2 border-transparent bg-transparent px-4 py-2 text-sm font-medium text-muted-foreground transition-all data-[state=active]:border-white data-[state=active]:font-semibold data-[state=active]:text-foreground"
+              >
+                Details
+              </TabsTrigger>
+              <TabsTrigger
+                value="communication"
+                className="rounded-none border-0 border-b-2 border-transparent bg-transparent px-4 py-2 text-sm font-medium text-muted-foreground transition-all data-[state=active]:border-white data-[state=active]:font-semibold data-[state=active]:text-foreground"
+              >
+                Communication
+              </TabsTrigger>
+              <TabsTrigger
+                value="preferences"
+                className="rounded-none border-0 border-b-2 border-transparent bg-transparent px-4 py-2 text-sm font-medium text-muted-foreground transition-all data-[state=active]:border-white data-[state=active]:font-semibold data-[state=active]:text-foreground"
+              >
+                Preferences
+              </TabsTrigger>
+              <TabsTrigger
+                value="documents"
+                className="rounded-none border-0 border-b-2 border-transparent bg-transparent px-4 py-2 text-sm font-medium text-muted-foreground transition-all data-[state=active]:border-white data-[state=active]:font-semibold data-[state=active]:text-foreground"
+              >
+                Documents
+              </TabsTrigger>
             </TabsList>
             <TabsContent
               value="details"
               className="space-y-4 overflow-y-auto px-4 pb-4"
             >
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="type">Type</Label>
+                  <Select
+                    value={watch("type")}
+                    onValueChange={(v) => setValue("type", v as Contact["type"])}
+                  >
+                    <SelectTrigger id="type">
+                      <SelectValue placeholder="Individual" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {contactSchema.shape.type.options.map((opt) => (
+                        <SelectItem key={opt} value={opt}>
+                          {opt}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Roles</Label>
+                  <MultiSelect
+                    options={roles.map((r) => ({ label: r, value: r }))}
+                    value={watch("roles") ?? []}
+                    onChange={(vals) => setValue("roles", vals)}
+                    placeholder="Donor"
+                  />
+                </div>
+              </div>
+              <Separator className="my-4" />
+              <div className="grid gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="honorific">Honorific</Label>
+                  <Input id="honorific" placeholder="Ms." {...register("honorific")} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="firstName">First Name</Label>
+                  <Input id="firstName" placeholder="Jane" {...register("firstName")} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="middleName">Middle Name</Label>
+                  <Input id="middleName" placeholder="A." {...register("middleName")} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="lastName">Last Name</Label>
+                  <Input id="lastName" placeholder="Doe" {...register("lastName")} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="aliases">Aliases</Label>
+                  <Input id="aliases" placeholder="Janie, JD" {...register("aliases")} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="attribution">How to Credit Publicly?</Label>
+                  <Input
+                    id="attribution"
+                    placeholder="Jane Doe Foundation"
+                    {...register("attribution")}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Pronouns</Label>
+                  <Select
+                    value={watch("pronouns")}
+                    onValueChange={(v) =>
+                      setValue("pronouns", v as Contact["pronouns"])
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="She/Her" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {pronounOptions.map((p) => (
+                        <SelectItem key={p} value={p}>
+                          {p}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="jobTitle">Job Title</Label>
+                  <Input id="jobTitle" placeholder="Program Director" {...register("jobTitle")} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="company">Company / Organization Name</Label>
+                  <Input id="company" placeholder="Acme Inc" {...register("company")} />
+                </div>
+              </div>
+              <Separator className="my-4" />
               <div className="space-y-2">
-                <Label>Type</Label>
-                <RadioGroup
-                  className="flex flex-wrap gap-2"
-                  value={watch("type")}
-                  onValueChange={(v) => setValue("type", v as Contact["type"])}
-                >
-                  {contactSchema.shape.type.options.map((opt) => (
-                    <div key={opt} className="flex items-center space-x-2">
-                      <RadioGroupItem value={opt} id={`type-${opt}`} />
-                      <Label htmlFor={`type-${opt}`}>{opt}</Label>
-                    </div>
-                  ))}
-                </RadioGroup>
-              </div>
-              <div className="space-y-2">
-                <Label>Roles</Label>
-                <MultiSelect
-                  options={roles.map((r) => ({ label: r, value: r }))}
-                  value={watch("roles") ?? []}
-                  onChange={(vals) => setValue("roles", vals)}
-                  placeholder="Select roles"
-                />
-              </div>
-              <div className="grid gap-2">
-                <Input placeholder="Honorific" {...register("honorific")} />
-                <Input placeholder="First Name" {...register("firstName")} />
-                <Input placeholder="Middle Name" {...register("middleName")} />
-                <Input placeholder="Last Name" {...register("lastName")} />
-                <Input placeholder="Aliases" {...register("aliases")} />
-                <Input
-                  placeholder="How to Credit Publicly?"
-                  {...register("attribution")}
-                />
-                <Select
-                  value={watch("pronouns")}
-                  onValueChange={(v) =>
-                    setValue("pronouns", v as Contact["pronouns"])
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Pronouns" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {pronounOptions.map((p) => (
-                      <SelectItem key={p} value={p}>
-                        {p}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Input placeholder="Job Title" {...register("jobTitle")} />
-                <Input
-                  placeholder="Company / Organization Name"
-                  {...register("company")}
-                />
-              </div>
-              <div className="grid gap-2">
+                <Label htmlFor="dateOfBirth">Date of Birth</Label>
                 <Input
                   type="date"
-                  placeholder="Date of Birth"
+                  id="dateOfBirth"
+                  placeholder="1990-01-01"
                   {...register("dateOfBirth")}
                 />
-                <Input type="file" {...register("documents")} multiple />
               </div>
             </TabsContent>
             <TabsContent
               value="communication"
               className="space-y-4 overflow-y-auto px-4 pb-4"
             >
-              <div className="grid gap-2">
-                <Input
-                  placeholder="Primary Email"
-                  {...register("primaryEmail")}
-                />
+              <div className="grid gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="primaryEmail">Primary Email</Label>
+                  <Input
+                    id="primaryEmail"
+                    placeholder="jane@example.com"
+                    {...register("primaryEmail")}
+                  />
+                </div>
                 {altEmailFields.map((field, index) => (
                   <div key={field.id} className="flex space-x-2">
-                    <Input
-                      className="flex-1"
-                      placeholder="Alternate Email"
-                      {...register(`alternateEmails.${index}` as const)}
-                    />
+                    <div className="flex-1 space-y-2">
+                      <Label htmlFor={`alternateEmails.${index}`}>{`Alternate Email ${index + 1}`}</Label>
+                      <Input
+                        id={`alternateEmails.${index}`}
+                        className="flex-1"
+                        placeholder="other@example.com"
+                        {...register(`alternateEmails.${index}` as const)}
+                      />
+                    </div>
                     <Button
                       type="button"
                       variant="ghost"
@@ -278,20 +358,36 @@ export function ContactDrawer({ open, onOpenChange, contact, onSave }: ContactDr
                     Add another email
                   </Button>
                 )}
-                <Input placeholder="Website" {...register("website")} />
-                <Input
-                  placeholder="Social Media"
-                  {...register("socialMedia")}
-                />
+                <div className="space-y-2">
+                  <Label htmlFor="website">Website</Label>
+                  <Input
+                    id="website"
+                    placeholder="https://example.com"
+                    {...register("website")}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="socialMedia">Social Media</Label>
+                  <Input
+                    id="socialMedia"
+                    placeholder="https://twitter.com/jane"
+                    {...register("socialMedia")}
+                  />
+                </div>
               </div>
-              <div className="grid gap-2">
+              <Separator className="my-4" />
+              <div className="grid gap-4">
                 {phoneFields.map((field, index) => (
                   <div key={field.id} className="flex space-x-2">
-                    <Input
-                      className="flex-1"
-                      placeholder="Phone Number"
-                      {...register(`phoneNumbers.${index}` as const)}
-                    />
+                    <div className="flex-1 space-y-2">
+                      <Label htmlFor={`phoneNumbers.${index}`}>{`Phone Number ${index + 1}`}</Label>
+                      <Input
+                        id={`phoneNumbers.${index}`}
+                        className="flex-1"
+                        placeholder="123-456-7890"
+                        {...register(`phoneNumbers.${index}` as const)}
+                      />
+                    </div>
                     <Button
                       type="button"
                       variant="ghost"
@@ -342,6 +438,15 @@ export function ContactDrawer({ open, onOpenChange, contact, onSave }: ContactDr
                   <Checkbox {...register("doNotEmail")} /> <span>Do not email</span>
                 </div>
               </div>
+            </TabsContent>
+            <TabsContent
+              value="documents"
+              className="space-y-4 overflow-y-auto px-4 pb-4"
+            >
+              <Dropzone
+                files={watch("documents") as File[] | undefined}
+                onFiles={(files) => setValue("documents", files)}
+              />
             </TabsContent>
           </Tabs>
         </form>

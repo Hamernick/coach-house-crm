@@ -45,3 +45,4 @@ export * from './toggle-group';
 export * from './toggle';
 export * from './tooltip';
 export * from './multi-select';
+export * from './dropzone';
