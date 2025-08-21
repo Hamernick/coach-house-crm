@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { useEffect, useState } from "react";
 import { ModeToggle } from "@/components/mode-toggle";
 import { MobileMenu } from "@/components/mobile-menu";
+import Link from "next/link";
 
 export default function HomePage() {
 	const [mounted, setMounted] = useState(false);
@@ -21,18 +22,18 @@ export default function HomePage() {
 			<header className="fixed top-5 left-1/2 transform -translate-x-1/2 bg-zinc-200/80 dark:bg-zinc-800/80 backdrop-blur-sm border border-zinc-300 dark:border-zinc-700 rounded-full shadow-lg px-8 py-3 z-50 flex items-center gap-8">
 				<div className="font-bold text-lg">CH</div>
 				<nav className="hidden md:flex gap-8">
-					<a href="#accelerator" className="font-medium hover:underline">
-						Accelerator
-					</a>
-					<a href="#team" className="font-medium hover:underline">
-						Team
-					</a>
-					<a href="#news" className="font-medium hover:underline">
-						News
-					</a>
-					<a href="#faq" className="font-medium hover:underline">
-						FAQs
-					</a>
+                                        <Link href="#accelerator" className="font-medium hover:underline">
+                                                Accelerator
+                                        </Link>
+                                        <Link href="#team" className="font-medium hover:underline">
+                                                Team
+                                        </Link>
+                                        <Link href="#news" className="font-medium hover:underline">
+                                                News
+                                        </Link>
+                                        <Link href="#faq" className="font-medium hover:underline">
+                                                FAQs
+                                        </Link>
 				</nav>
 				<div className="md:hidden ml-auto">
 					<MobileMenu />
