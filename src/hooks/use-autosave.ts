@@ -39,12 +39,17 @@ export function useAutosave<T>({ key, initialData, onSave }: UseAutosaveOptions<
   useEffect(() => {
     if (!key) return
     let ignore = false
-    fetcher<AutosaveResponse<T>>(`/api/autosave?key=${encodeURIComponent(key)}`).then((data) => {
-      if (!ignore && data?.data) {
-        setDraft(data.data)
-        setSavedAt(new Date(data.updatedAt))
-      }
-    })
+    fetcher<AutosaveResponse<T>>(`/api/autosave?key=${encodeURIComponent(key)}`)
+      .then((data) => {
+        if (!ignore && data?.data) {
+          setDraft(data.data)
+          setSavedAt(new Date(data.updatedAt))
+        }
+      })
+      .catch(() => {
+        // If the user is unauthorized or the request fails, simply ignore the
+        // error so it doesn't surface to the user or break rendering.
+      })
     return () => {
       ignore = true
     }
@@ -54,13 +59,19 @@ export function useAutosave<T>({ key, initialData, onSave }: UseAutosaveOptions<
     if (!key) return
     setSaving(true)
     const t = setTimeout(async () => {
-      const res = await postJson<AutosaveResponse<T>, { key: string; data: T }>(
-        '/api/autosave',
-        { key, data: draft }
-      )
-      setSaving(false)
-      setSavedAt(new Date(res.updatedAt))
-      onSave?.(draft)
+      try {
+        const res = await postJson<AutosaveResponse<T>, { key: string; data: T }>(
+          '/api/autosave',
+          { key, data: draft }
+        )
+        setSavedAt(new Date(res.updatedAt))
+        onSave?.(draft)
+      } catch {
+        // Ignore errors from autosave requests (e.g. unauthorized) so that
+        // autosave failures don't break the UI.
+      } finally {
+        setSaving(false)
+      }
     }, 1000)
     return () => clearTimeout(t)
   }, [draft, key, onSave])
