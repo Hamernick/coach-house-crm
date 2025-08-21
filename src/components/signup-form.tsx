@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { createSupabaseBrowser } from "@/utils";
 import { Button } from "@/components/ui/button";
