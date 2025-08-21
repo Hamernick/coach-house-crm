@@ -1,6 +1,7 @@
 import nodemailer from "nodemailer";
 import { Queue, Worker, QueueScheduler, type JobsOptions } from "bullmq";
 import { renderEmail, type EmailBlock } from "@/lib/email/render";
+import { env } from "@/lib/env";
 
 /** Name of the BullMQ queue */
 const QUEUE_NAME = "emails";
@@ -130,4 +131,3 @@ function renderWithVariables(
   }
   return html;
 }
-

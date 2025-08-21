@@ -2,18 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { cn } from "@/lib/utils";
 import { createSupabaseBrowser } from "@/utils";
+import { AuthCard } from "@/components/auth-card";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 
 export function SignupForm({
   className,
@@ -52,73 +43,57 @@ export function SignupForm({
 
   if (success) {
     return (
-      <div className={cn("flex flex-col gap-6", className)} {...props}>
-        <Card>
-          <CardHeader>
-            <CardTitle>Check your email</CardTitle>
-            <CardDescription>
-              We sent you a confirmation link.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button className="w-full" onClick={() => router.push("/login")}>
-              Back to login
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
+      <AuthCard
+        className={className}
+        title="Check your email"
+        description="We sent you a confirmation link."
+        {...props}
+      >
+        <Button className="w-full" onClick={() => router.push("/login")}>Back to login</Button>
+      </AuthCard>
     );
   }
 
   return (
-    <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <Card>
-        <CardHeader>
-          <CardTitle>Create an account</CardTitle>
-          <CardDescription>
-            Enter your email below to create your account
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={onSubmit}>
-            <div className="flex flex-col gap-6">
-              <div className="grid gap-3">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  placeholder="m@example.com"
-                  required
-                />
-              </div>
-              <div className="grid gap-3">
-                <Label htmlFor="password">Password</Label>
-                <Input id="password" name="password" type="password" required />
-              </div>
-              <div className="grid gap-3">
-                <Label htmlFor="confirm">Confirm password</Label>
-                <Input id="confirm" name="confirm" type="password" required />
-              </div>
-              {error && <p className="text-sm text-red-500">{error}</p>}
-              <div className="flex flex-col gap-3">
-                <Button type="submit" className="w-full">
-                  Create account
-                </Button>
-                <Button variant="outline" className="w-full">
-                  Sign up with Google
-                </Button>
-              </div>
-            </div>
-            <div className="mt-4 text-center text-sm">
-              Already have an account?{" "}
-              <a href="/login" className="underline underline-offset-4">
-                Log in
-              </a>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
-    </div>
+    <AuthCard
+      className={className}
+      title="Create an account"
+      description="Enter your email below to create your account"
+      fields={[
+        {
+          id: "email",
+          label: "Email",
+          name: "email",
+          type: "email",
+          placeholder: "m@example.com",
+        },
+        {
+          id: "password",
+          label: "Password",
+          name: "password",
+          type: "password",
+        },
+        {
+          id: "confirm",
+          label: "Confirm password",
+          name: "confirm",
+          type: "password",
+        },
+      ]}
+      onSubmit={onSubmit}
+      submitLabel="Create account"
+      googleLabel="Sign up with Google"
+      footer={
+        <div className="mt-4 text-center text-sm">
+          Already have an account?{" "}
+          <a href="/login" className="underline underline-offset-4">
+            Log in
+          </a>
+        </div>
+      }
+      error={error}
+      {...props}
+    />
   );
 }
+
