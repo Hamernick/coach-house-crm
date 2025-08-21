@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient, CookieOptions } from "@supabase/ssr";
-
-const PROTECTED = ["/dashboard","/contacts","/marketing","/sequences","/reports","/apps","/settings"];
+import { protectedPaths } from "@/lib/routes";
 
 export async function middleware(req: NextRequest) {
   let res = NextResponse.next({ request: { headers: new Headers(req.headers) } });
@@ -25,7 +24,7 @@ export async function middleware(req: NextRequest) {
     }
   );
 
-  if (PROTECTED.some(p => req.nextUrl.pathname.startsWith(p))) {
+  if (protectedPaths.some((p) => req.nextUrl.pathname.startsWith(p))) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       const url = req.nextUrl.clone();
