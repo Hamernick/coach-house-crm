@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { getSessionOrg } from "@/lib/auth";
+import { requireOrg, jsonError } from "@/lib/api";
 import { db } from "@/lib/store";
 
 const updateSchema = z.object({
@@ -9,19 +9,17 @@ const updateSchema = z.object({
 });
 
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const orgId = await getSessionOrg();
-  if (!orgId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const orgId = await requireOrg(req);
+  if (orgId instanceof NextResponse) return orgId;
   const segment = db.segments.get(params.id);
   if (!segment) {
-    return NextResponse.json({ error: "Not Found" }, { status: 404 });
+    return jsonError(404, "Not Found");
   }
   if (segment.orgId !== orgId) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    return jsonError(403, "Forbidden");
   }
   return NextResponse.json({ segment, members: segment.members });
 }
@@ -30,24 +28,19 @@ export async function PATCH(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const orgId = await getSessionOrg();
-  if (!orgId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const orgId = await requireOrg(req);
+  if (orgId instanceof NextResponse) return orgId;
   const segment = db.segments.get(params.id);
   if (!segment) {
-    return NextResponse.json({ error: "Not Found" }, { status: 404 });
+    return jsonError(404, "Not Found");
   }
   if (segment.orgId !== orgId) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    return jsonError(403, "Forbidden");
   }
   const body = await req.json().catch(() => null);
   const parsed = updateSchema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json(
-      { error: parsed.error.flatten() },
-      { status: 422 }
-    );
+    return jsonError(422, parsed.error.flatten());
   }
   Object.assign(segment, parsed.data, { updatedAt: new Date().toISOString() });
   db.segments.set(segment.id, segment);
@@ -55,19 +48,17 @@ export async function PATCH(
 }
 
 export async function DELETE(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const orgId = await getSessionOrg();
-  if (!orgId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const orgId = await requireOrg(req);
+  if (orgId instanceof NextResponse) return orgId;
   const segment = db.segments.get(params.id);
   if (!segment) {
-    return NextResponse.json({ error: "Not Found" }, { status: 404 });
+    return jsonError(404, "Not Found");
   }
   if (segment.orgId !== orgId) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    return jsonError(403, "Forbidden");
   }
   db.segments.delete(segment.id);
   return NextResponse.json({ success: true });
