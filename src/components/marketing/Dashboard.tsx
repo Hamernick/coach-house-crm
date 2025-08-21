@@ -1,6 +1,6 @@
 'use client'
 
-import useSWR from 'swr'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { fetcher } from '@/lib/fetch'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
@@ -28,23 +28,33 @@ interface TemplateListResponse {
 }
 
 export function Dashboard() {
-  const { data: campaignData } = useSWR<CampaignListResponse>(
-    '/api/campaigns',
-    fetcher
-  )
-  const { data: templateData } = useSWR<TemplateListResponse>(
-    '/api/templates',
-    fetcher
-  )
+  const [campaigns, setCampaigns] = useState<Campaign[]>([])
+  const [templates, setTemplates] = useState<Template[]>([])
+  const [loaded, setLoaded] = useState(false)
 
-  const campaigns = campaignData?.campaigns ?? []
-  const templates = templateData?.templates ?? []
+  useEffect(() => {
+    async function load() {
+      try {
+        const [campaignData, templateData] = await Promise.all([
+          fetcher<CampaignListResponse>('/api/campaigns'),
+          fetcher<TemplateListResponse>('/api/templates'),
+        ])
+        setCampaigns(campaignData.campaigns)
+        setTemplates(templateData.templates)
+      } catch (error) {
+        console.error(error)
+      } finally {
+        setLoaded(true)
+      }
+    }
+    load()
+  }, [])
 
   const total = campaigns.length
   const scheduled = campaigns.filter((c) => c.status === 'SCHEDULED').length
   const sent = campaigns.filter((c) => c.status === 'SENT').length
 
-  if (campaignData && campaigns.length === 0) {
+  if (loaded && campaigns.length === 0) {
     return (
       <div className="grid gap-4 sm:grid-cols-2">
         <Card data-empty>
