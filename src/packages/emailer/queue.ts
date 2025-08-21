@@ -1,5 +1,6 @@
 import nodemailer from "nodemailer";
 import { renderEmail, type EmailBlock } from "@/lib/email/render";
+import { env } from "@/lib/env";
 
 export interface QueuePayload {
   to: string;
@@ -40,12 +41,10 @@ export async function enqueueEmail(payload: QueuePayload): Promise<void> {
     throw new Error("Rendered HTML must include unsubscribe_url");
   }
 
-  const transporter = nodemailer.createTransport(
-    process.env.SMTP_URL ? process.env.SMTP_URL : { jsonTransport: true }
-  );
+  const transporter = nodemailer.createTransport(env.SMTP_URL);
 
   await transporter.sendMail({
-    from: process.env.EMAIL_FROM || "no-reply@example.com",
+    from: env.EMAIL_FROM,
     to,
     subject,
     html,

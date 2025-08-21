@@ -1,6 +1,7 @@
 import { cookies } from 'next/headers';
 import { createServerClient } from '@supabase/ssr';
 import type { Role } from '@prisma/client';
+import { env } from '@/lib/env';
 
 /**
  * Returns the organization ID for the current authenticated session.
@@ -9,8 +10,8 @@ import type { Role } from '@prisma/client';
 export async function getSessionOrg() {
   const cookieStore = cookies();
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    env.NEXT_PUBLIC_SUPABASE_URL,
+    env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     {
       cookies: {
         get(name: string) {
