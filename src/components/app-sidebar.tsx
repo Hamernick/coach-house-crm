@@ -1,27 +1,20 @@
 "use client"
 
 import * as React from "react"
-import {
-  IconLayoutDashboard,
-  IconUsers,
-  IconMail,
-  IconTimeline,
-  IconCurrencyDollar,
-  IconReportAnalytics,
-  IconSettings,
-  IconHelp,
-  IconSearch,
-} from "@tabler/icons-react"
+import { IconHelp, IconSearch } from "@tabler/icons-react"
 
 import { NavMain } from "@/components/nav-main"
 import { NavSecondary } from "@/components/nav-secondary"
 import { NavUser } from "@/components/nav-user"
+import { GetHelpDialog } from "@/components/get-help-dialog"
+import { SearchDialog } from "@/components/search-dialog"
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
 } from "@/components/ui/sidebar"
+import { navMain } from "@/lib/routes"
 
 const user = {
   name: "shadcn",
@@ -30,23 +23,16 @@ const user = {
   organization: "User Organization",
 }
 
-const navMain = [
-  { title: "Dashboard", url: "/dashboard", icon: IconLayoutDashboard },
-  { title: "Contacts", url: "/contacts", icon: IconUsers },
-  { title: "Marketing", url: "/marketing", icon: IconMail },
-  { title: "Sequences", url: "/sequences", icon: IconTimeline },
-  { title: "Finance", url: "/finance", icon: IconCurrencyDollar },
-  { title: "Reports", url: "/reports", icon: IconReportAnalytics },
-  { title: "Settings", url: "/settings", icon: IconSettings },
-]
-
 export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
+  const [helpOpen, setHelpOpen] = React.useState(false)
+  const [searchOpen, setSearchOpen] = React.useState(false)
+
   const handleGetHelpClick = () => {
-    alert("Get Help functionality coming soon!")
+    setHelpOpen(true)
   }
 
   const handleSearchClick = () => {
-    alert("Search functionality coming soon!")
+    setSearchOpen(true)
   }
 
   const navSecondary = [
@@ -55,17 +41,21 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
   ]
 
   return (
-    <Sidebar collapsible="offcanvas" {...props}>
-      <SidebarHeader>
-        <div className="text-base font-semibold">{user.organization}</div>
-      </SidebarHeader>
-      <SidebarContent>
-        <NavMain items={navMain} />
-        <NavSecondary items={navSecondary} className="mt-auto" />
-      </SidebarContent>
-      <SidebarFooter>
-        <NavUser user={user} />
-      </SidebarFooter>
-    </Sidebar>
+    <>
+      <Sidebar collapsible="offcanvas" {...props}>
+        <SidebarHeader>
+          <div className="text-base font-semibold">{user.organization}</div>
+        </SidebarHeader>
+        <SidebarContent>
+          <NavMain items={navMain} />
+          <NavSecondary items={navSecondary} className="mt-auto" />
+        </SidebarContent>
+        <SidebarFooter>
+          <NavUser user={user} />
+        </SidebarFooter>
+      </Sidebar>
+      <GetHelpDialog open={helpOpen} onOpenChange={setHelpOpen} />
+      <SearchDialog open={searchOpen} onOpenChange={setSearchOpen} />
+    </>
   )
 }

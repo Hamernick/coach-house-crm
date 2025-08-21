@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
+import Link from "next/link";
 
 export function MobileMenu() {
   const [isOpen, setIsOpen] = useState(false);
@@ -19,18 +20,18 @@ export function MobileMenu() {
       {isOpen && (
         <div className="absolute right-0 mt-2 w-48 bg-gray-200 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg shadow-lg">
           <nav className="flex flex-col p-4 gap-2">
-            <a href="#accelerator" className="font-medium hover:underline">
+            <Link href="#accelerator" className="font-medium hover:underline">
               Accelerator
-            </a>
-            <a href="#team" className="font-medium hover:underline">
+            </Link>
+            <Link href="#team" className="font-medium hover:underline">
               Team
-            </a>
-            <a href="#news" className="font-medium hover:underline">
+            </Link>
+            <Link href="#news" className="font-medium hover:underline">
               News
-            </a>
-            <a href="#faq" className="font-medium hover:underline">
+            </Link>
+            <Link href="#faq" className="font-medium hover:underline">
               FAQs
-            </a>
+            </Link>
           </nav>
         </div>
       )}
