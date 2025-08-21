@@ -13,7 +13,7 @@ function escapeHtml(str: string) {
     .replace(/'/g, "&#039;")
 }
 
-export function renderEmail(blocks: EmailBlock[]): string {
+export function renderBlocksToHtml(blocks: EmailBlock[]): string {
   return blocks
     .map((block) => {
       const content = escapeHtml(block.content)
@@ -28,3 +28,5 @@ export function renderEmail(blocks: EmailBlock[]): string {
     })
     .join("\n")
 }
+
+export { renderBlocksToHtml as renderEmail }

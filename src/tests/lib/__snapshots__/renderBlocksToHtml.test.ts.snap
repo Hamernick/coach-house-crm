@@ -1,0 +1,4 @@
+exports[`renderBlocksToHtml renders blocks to html snapshot 1`] = `
+<h1>Hello &lt;World&gt;</h1>
+<p>Paragraph &amp; more</p>
+`
