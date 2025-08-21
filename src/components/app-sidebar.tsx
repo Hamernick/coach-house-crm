@@ -16,6 +16,8 @@ import {
 import { NavMain } from "@/components/nav-main"
 import { NavSecondary } from "@/components/nav-secondary"
 import { NavUser } from "@/components/nav-user"
+import { GetHelpDialog } from "@/components/get-help-dialog"
+import { SearchDialog } from "@/components/search-dialog"
 import {
   Sidebar,
   SidebarContent,
@@ -41,12 +43,15 @@ const navMain = [
 ]
 
 export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
+  const [helpOpen, setHelpOpen] = React.useState(false)
+  const [searchOpen, setSearchOpen] = React.useState(false)
+
   const handleGetHelpClick = () => {
-    alert("Get Help functionality coming soon!")
+    setHelpOpen(true)
   }
 
   const handleSearchClick = () => {
-    alert("Search functionality coming soon!")
+    setSearchOpen(true)
   }
 
   const navSecondary = [
@@ -55,17 +60,21 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
   ]
 
   return (
-    <Sidebar collapsible="offcanvas" {...props}>
-      <SidebarHeader>
-        <div className="text-base font-semibold">{user.organization}</div>
-      </SidebarHeader>
-      <SidebarContent>
-        <NavMain items={navMain} />
-        <NavSecondary items={navSecondary} className="mt-auto" />
-      </SidebarContent>
-      <SidebarFooter>
-        <NavUser user={user} />
-      </SidebarFooter>
-    </Sidebar>
+    <>
+      <Sidebar collapsible="offcanvas" {...props}>
+        <SidebarHeader>
+          <div className="text-base font-semibold">{user.organization}</div>
+        </SidebarHeader>
+        <SidebarContent>
+          <NavMain items={navMain} />
+          <NavSecondary items={navSecondary} className="mt-auto" />
+        </SidebarContent>
+        <SidebarFooter>
+          <NavUser user={user} />
+        </SidebarFooter>
+      </Sidebar>
+      <GetHelpDialog open={helpOpen} onOpenChange={setHelpOpen} />
+      <SearchDialog open={searchOpen} onOpenChange={setSearchOpen} />
+    </>
   )
 }
