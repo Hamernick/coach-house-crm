@@ -1,7 +1,27 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { fetcher, postJson } from '@/lib/fetch'
+
+function isEqual(a: any, b: any): boolean {
+  if (a === b) return true
+  if (typeof a !== 'object' || typeof b !== 'object' || !a || !b) return false
+  if (Array.isArray(a)) {
+    if (!Array.isArray(b) || a.length !== b.length) return false
+    for (let i = 0; i < a.length; i++) {
+      if (!isEqual(a[i], b[i])) return false
+    }
+    return true
+  }
+  const keysA = Object.keys(a)
+  const keysB = Object.keys(b)
+  if (keysA.length !== keysB.length) return false
+  for (const key of keysA) {
+    if (!Object.prototype.hasOwnProperty.call(b, key)) return false
+    if (!isEqual(a[key], b[key])) return false
+  }
+  return true
+}
 
 interface AutosaveResponse<T> {
   key: string
@@ -29,8 +49,7 @@ export function useAutosave<T>({ key, initialData, onSave }: UseAutosaveOptions<
   const previousInitialData = useRef<T>(initialData)
 
   useEffect(() => {
-    const serialized = JSON.stringify(initialData)
-    if (JSON.stringify(previousInitialData.current) !== serialized) {
+    if (!isEqual(previousInitialData.current, initialData)) {
       setDraft(initialData)
     }
     previousInitialData.current = initialData
@@ -55,26 +74,36 @@ export function useAutosave<T>({ key, initialData, onSave }: UseAutosaveOptions<
     }
   }, [key])
 
-  useEffect(() => {
-    if (!key) return
-    setSaving(true)
-    const t = setTimeout(async () => {
+  const timeout = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const save = useCallback(
+    async (data: T) => {
       try {
         const res = await postJson<AutosaveResponse<T>, { key: string; data: T }>(
           '/api/autosave',
-          { key, data: draft }
+          { key: key as string, data }
         )
         setSavedAt(new Date(res.updatedAt))
-        onSave?.(draft)
+        onSave?.(data)
       } catch {
         // Ignore errors from autosave requests (e.g. unauthorized) so that
         // autosave failures don't break the UI.
       } finally {
         setSaving(false)
       }
-    }, 1000)
-    return () => clearTimeout(t)
-  }, [draft, key, onSave])
+    },
+    [key, onSave]
+  )
+
+  useEffect(() => {
+    if (!key) return
+    setSaving(true)
+    if (timeout.current) clearTimeout(timeout.current)
+    timeout.current = setTimeout(() => save(draft), 1000)
+    return () => {
+      if (timeout.current) clearTimeout(timeout.current)
+    }
+  }, [draft, key, save])
 
   return { draft, setDraft, saving, savedAt }
 }
