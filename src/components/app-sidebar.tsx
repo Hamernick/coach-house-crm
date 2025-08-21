@@ -4,7 +4,6 @@ import * as React from "react"
 import {
   IconLayoutDashboard,
   IconUsers,
-  IconTag,
   IconMail,
   IconTimeline,
   IconCurrencyDollar,
@@ -34,7 +33,6 @@ const user = {
 const navMain = [
   { title: "Dashboard", url: "/dashboard", icon: IconLayoutDashboard },
   { title: "Contacts", url: "/contacts", icon: IconUsers },
-  { title: "Segments", url: "/segments", icon: IconTag },
   { title: "Marketing", url: "/marketing", icon: IconMail },
   { title: "Sequences", url: "/sequences", icon: IconTimeline },
   { title: "Finance", url: "/finance", icon: IconCurrencyDollar },
