@@ -1,10 +1,17 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet'
+import { format } from 'date-fns'
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from '@/components/ui/sheet'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { SegmentFiltersBuilder, SegmentFilter } from './SegmentFiltersBuilder'
+import { useAutosave } from '@/hooks/use-autosave'
 
 export interface SegmentDraft {
   id: string
@@ -22,29 +29,41 @@ interface SegmentEditorSheetProps {
   onChange: (segment: SegmentDraft) => void
 }
 
-function AutosaveBadge({ saved }: { saved: boolean }) {
-  return <Badge variant="outline">{saved ? 'Saved' : 'Saving...'}</Badge>
+function AutosaveBadge({
+  saving,
+  savedAt,
+}: {
+  saving: boolean
+  savedAt: Date | null
+}) {
+  return (
+    <Badge variant="outline">
+      {saving ? 'Saving...' : savedAt ? `Saved ${format(savedAt, 'HH:mm')}` : 'Saved'}
+    </Badge>
+  )
 }
 
-export function SegmentEditorSheet({ open, segment, onClose, onChange }: SegmentEditorSheetProps) {
-  const [draft, setDraft] = useState<SegmentDraft | null>(segment)
-  const [saved, setSaved] = useState(true)
+export function SegmentEditorSheet({
+  open,
+  segment,
+  onClose,
+  onChange,
+}: SegmentEditorSheetProps) {
+  const empty: SegmentDraft = {
+    id: '',
+    name: '',
+    subtitle: '',
+    category: '',
+    filtersMode: 'any',
+    filters: [],
+  }
+  const { draft, setDraft, saving, savedAt } = useAutosave<SegmentDraft>({
+    key: segment ? `segment-${segment.id}` : undefined,
+    initialData: segment ?? empty,
+    onSave: onChange,
+  })
 
-  useEffect(() => {
-    setDraft(segment)
-  }, [segment])
-
-  useEffect(() => {
-    if (!draft) return
-    setSaved(false)
-    const t = setTimeout(() => {
-      onChange(draft)
-      setSaved(true)
-    }, 1000)
-    return () => clearTimeout(t)
-  }, [draft, onChange])
-
-  if (!draft) return null
+  if (!segment) return null
 
   return (
     <Sheet open={open} onOpenChange={(o) => !o && onClose()}>
@@ -52,7 +71,7 @@ export function SegmentEditorSheet({ open, segment, onClose, onChange }: Segment
         <SheetHeader>
           <div className="flex items-center justify-between">
             <SheetTitle>{draft.name || 'New Segment'}</SheetTitle>
-            <AutosaveBadge saved={saved} />
+            <AutosaveBadge saving={saving} savedAt={savedAt} />
           </div>
           <SheetDescription>Define your contact segment.</SheetDescription>
         </SheetHeader>
@@ -74,7 +93,9 @@ export function SegmentEditorSheet({ open, segment, onClose, onChange }: Segment
           />
           <SegmentFiltersBuilder
             value={{ mode: draft.filtersMode, filters: draft.filters }}
-            onChange={(v) => setDraft({ ...draft, filtersMode: v.mode, filters: v.filters })}
+            onChange={(v) =>
+              setDraft({ ...draft, filtersMode: v.mode, filters: v.filters })
+            }
           />
         </div>
       </SheetContent>
