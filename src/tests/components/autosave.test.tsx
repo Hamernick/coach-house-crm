@@ -1,10 +1,10 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, fireEvent } from '@testing-library/react'
-import { SegmentEditorSheet, SegmentDraft } from '@/components/segments/SegmentEditorSheet'
+import { SegmentEditorDialog, SegmentDraft } from '@/components/segments/SegmentEditorDialog'
 
 vi.useFakeTimers()
 
-describe('SegmentEditorSheet autosave', () => {
+describe('SegmentEditorDialog autosave', () => {
   it('debounces changes', async () => {
     const draft: SegmentDraft = {
       id: '1',
@@ -13,14 +13,16 @@ describe('SegmentEditorSheet autosave', () => {
       category: '',
       filtersMode: 'any',
       filters: [],
+      members: [],
     }
     const onChange = vi.fn()
     render(
-      <SegmentEditorSheet
+      <SegmentEditorDialog
         open
         segment={draft}
         onClose={() => {}}
         onChange={onChange}
+        onSave={onChange}
       />
     )
 

@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { SegmentCard } from './SegmentCard'
 import { SegmentEmptyCard } from './SegmentEmptyCard'
-import { SegmentEditorSheet, SegmentDraft } from './SegmentEditorSheet'
+import { SegmentEditorDialog, SegmentDraft } from './SegmentEditorDialog'
 
 export function SegmentsSection() {
   const [segments, setSegments] = useState<SegmentDraft[]>([])
@@ -32,6 +32,7 @@ export function SegmentsSection() {
               category: '',
               filtersMode: 'any',
               filters: [],
+              members: [],
             })
           }
         />
@@ -49,16 +50,18 @@ export function SegmentsSection() {
                 category: '',
                 filtersMode: 'any',
                 filters: [],
+                members: [],
               })
             }
           />
         </div>
       )}
-      <SegmentEditorSheet
+      <SegmentEditorDialog
         open={!!editing}
         segment={editing}
         onClose={() => setEditing(null)}
         onChange={handleChange}
+        onSave={handleChange}
       />
     </section>
   )
