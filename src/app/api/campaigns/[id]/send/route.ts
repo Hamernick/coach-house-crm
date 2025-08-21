@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { getSessionOrg } from "@/lib/auth";
+import { requireOrg, jsonError } from "@/lib/api";
 import { db } from "@/lib/store";
 
 const sendSchema = z.object({
@@ -11,24 +11,19 @@ export async function POST(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const orgId = await getSessionOrg();
-  if (!orgId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const orgId = await requireOrg(req);
+  if (orgId instanceof NextResponse) return orgId;
   const campaign = db.campaigns.get(params.id);
   if (!campaign) {
-    return NextResponse.json({ error: "Not Found" }, { status: 404 });
+    return jsonError(404, "Not Found");
   }
   if (campaign.orgId !== orgId) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    return jsonError(403, "Forbidden");
   }
   const body = await req.json().catch(() => null);
   const parsed = sendSchema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json(
-      { error: parsed.error.flatten() },
-      { status: 422 }
-    );
+    return jsonError(422, parsed.error.flatten());
   }
   const sendAt = parsed.data.sendAt || new Date().toISOString();
   campaign.sendAt = sendAt;
