@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { fetcher, postJson } from '@/lib/fetch'
 
 interface AutosaveResponse<T> {
@@ -26,9 +26,14 @@ export function useAutosave<T>({ key, initialData, onSave }: UseAutosaveOptions<
   const [draft, setDraft] = useState<T>(initialData)
   const [saving, setSaving] = useState(false)
   const [savedAt, setSavedAt] = useState<Date | null>(null)
+  const previousInitialData = useRef<T>(initialData)
 
   useEffect(() => {
-    setDraft(initialData)
+    const serialized = JSON.stringify(initialData)
+    if (JSON.stringify(previousInitialData.current) !== serialized) {
+      setDraft(initialData)
+    }
+    previousInitialData.current = initialData
   }, [initialData])
 
   useEffect(() => {
