@@ -1,16 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { randomUUID } from "crypto";
-import { getSessionOrg } from "@/lib/auth";
+import { requireOrg, jsonError } from "@/lib/api";
 import { db, Segment } from "@/lib/store";
 
 const PAGE_SIZE = 10;
 
 export async function GET(req: NextRequest) {
-  const orgId = await getSessionOrg();
-  if (!orgId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const orgId = await requireOrg(req);
+  if (orgId instanceof NextResponse) return orgId;
   const { searchParams } = new URL(req.url);
   const cursor = searchParams.get("cursor") || undefined;
 
@@ -31,17 +29,12 @@ const createSchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
-  const orgId = await getSessionOrg();
-  if (!orgId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const orgId = await requireOrg(req);
+  if (orgId instanceof NextResponse) return orgId;
   const body = await req.json().catch(() => null);
   const parsed = createSchema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json(
-      { error: parsed.error.flatten() },
-      { status: 422 }
-    );
+    return jsonError(422, parsed.error.flatten());
   }
   const { name, dslJson } = parsed.data;
   const now = new Date().toISOString();
