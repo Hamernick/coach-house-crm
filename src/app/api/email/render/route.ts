@@ -1,21 +1,27 @@
-import { NextRequest, NextResponse } from "next/server";
-import { Maily } from "@maily-to/render";
 
-export async function POST(req: NextRequest) {
-  const { json, variables = {}, payload = {} } = await req.json();
+import { renderEmail, EmailBlock } from "@/lib/email/render"
 
-  const m = new Maily(json);
-
-  for (const [key, value] of Object.entries(variables)) {
-    m.setVariableValue(key, value as any);
-  }
-
-  for (const [key, value] of Object.entries(payload)) {
-    m.setPayloadValue(key, value as any);
-  }
-
-  const html = await m.render();
-
-  return NextResponse.json({ html });
+function applyVariables(html: string, variables: Record<string, string>): string {
+  return Object.entries(variables || {}).reduce(
+    (acc, [key, value]) => acc.replace(new RegExp(`{{\\s*${key}\\s*}}`, "g"), String(value)),
+    html,
+  )
 }
 
+export async function POST(req: Request) {
+  try {
+    const { content_json, variables } = await req.json()
+    const blocks: EmailBlock[] =
+      typeof content_json === "string" ? JSON.parse(content_json) : content_json
+    let html = renderEmail(blocks)
+    if (variables && typeof variables === "object") {
+      html = applyVariables(html, variables as Record<string, string>)
+    }
+    return Response.json({ html })
+  } catch (err) {
+    return new Response(JSON.stringify({ error: "Invalid content_json" }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" },
+    })
+  }
+}
