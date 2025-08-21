@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
+import { useSearchParams } from "next/navigation"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -8,6 +9,7 @@ import { EmailBlock, renderEmail } from "@/lib/email/render"
 
 import { HeadingBlock } from "./Blocks/HeadingBlock"
 import { ParagraphBlock } from "./Blocks/ParagraphBlock"
+import { templates } from "@/components/marketing/templates"
 
 interface CampaignComposerProps {
   campaignId: string
@@ -15,13 +17,14 @@ interface CampaignComposerProps {
 
 export function CampaignComposer({ campaignId }: CampaignComposerProps) {
   const storageKey = `campaign-${campaignId}`
+  const searchParams = useSearchParams()
 
   const [title, setTitle] = useState("")
   const [blocks, setBlocks] = useState<EmailBlock[]>([])
   const [status, setStatus] = useState<"DRAFT" | "SCHEDULED">("DRAFT")
   const [scheduledAt, setScheduledAt] = useState("")
 
-  // load draft
+  // load draft or template
   useEffect(() => {
     if (typeof window === "undefined") return
     const saved = localStorage.getItem(storageKey)
@@ -32,9 +35,19 @@ export function CampaignComposer({ campaignId }: CampaignComposerProps) {
         setBlocks(data.blocks || [])
         setStatus(data.status || "DRAFT")
         setScheduledAt(data.scheduledAt || "")
+        return
       } catch {}
     }
-  }, [storageKey])
+
+    const templateId = searchParams.get("template")
+    if (templateId) {
+      const template = templates.find((t) => t.id === templateId)
+      if (template) {
+        setTitle(template.name)
+        setBlocks(template.blocks)
+      }
+    }
+  }, [storageKey, searchParams])
 
   // autosave
   useEffect(() => {
