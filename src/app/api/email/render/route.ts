@@ -1,3 +1,4 @@
+
 import { renderEmail, EmailBlock } from "@/lib/email/render"
 
 function applyVariables(html: string, variables: Record<string, string>): string {
