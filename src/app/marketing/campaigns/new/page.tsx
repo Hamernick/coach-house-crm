@@ -9,8 +9,10 @@ export default function NewCampaignPage() {
   return (
     <SidebarInset>
       <SiteHeader title="New Campaign" />
-      <div className="p-4">
-        <CampaignComposer campaignId={id} />
+      <div className="flex flex-1 items-center justify-center p-4">
+        <div className="w-full max-w-5xl rounded-lg border bg-background p-4 shadow">
+          <CampaignComposer campaignId={id} />
+        </div>
       </div>
     </SidebarInset>
   )

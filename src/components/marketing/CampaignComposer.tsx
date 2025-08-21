@@ -2,7 +2,6 @@
 
 import { useState } from "react"
 import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -15,6 +14,7 @@ import {
 } from "@/components/ui/breadcrumb"
 import { BreadcrumbPortal } from "@/components/shared/BreadcrumbPortal"
 import { useAutosave } from "@/hooks/use-autosave"
+import { MailyEditor } from "./MailyEditor"
 
 interface Draft {
   subject: string
@@ -118,12 +118,8 @@ export function CampaignComposer({ campaignId }: CampaignComposerProps) {
         value={draft.subject}
         onChange={(e) => setDraft({ ...draft, subject: e.target.value })}
       />
-      <Textarea
-        placeholder="Write your email..."
-        className="h-60"
-        value={draft.content}
-        onChange={(e) => setDraft({ ...draft, content: e.target.value })}
-      />
+
+      <MailyEditor />
 
       <RecipientsTable
         recipients={draft.recipients}
