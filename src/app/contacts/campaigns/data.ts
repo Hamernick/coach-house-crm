@@ -3,7 +3,7 @@ import { z } from "zod"
 export const campaignSchema = z.object({
   id: z.string(),
   name: z.string(),
-  status: z.enum(["DRAFT", "SCHEDULED", "SENT"]),
+  status: z.enum(["DRAFT", "SCHEDULED", "SENDING", "SENT"]),
   scheduledAt: z.string().optional(),
 })
 

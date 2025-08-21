@@ -8,7 +8,11 @@ export interface Segment {
   updatedAt: string;
 }
 
-export type CampaignStatus = "DRAFT" | "SCHEDULED" | "SENT";
+export type CampaignStatus =
+  | "DRAFT"
+  | "SCHEDULED"
+  | "SENDING"
+  | "SENT";
 
 export interface Campaign {
   id: string;
