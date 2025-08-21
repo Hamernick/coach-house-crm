@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import useSWR from 'swr'
 import { fetcher, postJson } from '@/lib/fetch'
 
 interface AutosaveResponse<T> {
@@ -24,8 +23,6 @@ interface UseAutosaveResult<T> {
 }
 
 export function useAutosave<T>({ key, initialData, onSave }: UseAutosaveOptions<T>): UseAutosaveResult<T> {
-  const { data } = useSWR<AutosaveResponse<T>>(key ? `/api/autosave?key=${encodeURIComponent(key)}` : null, fetcher)
-
   const [draft, setDraft] = useState<T>(initialData)
   const [saving, setSaving] = useState(false)
   const [savedAt, setSavedAt] = useState<Date | null>(null)
@@ -35,11 +32,18 @@ export function useAutosave<T>({ key, initialData, onSave }: UseAutosaveOptions<
   }, [initialData])
 
   useEffect(() => {
-    if (data?.data) {
-      setDraft(data.data)
-      setSavedAt(new Date(data.updatedAt))
+    if (!key) return
+    let ignore = false
+    fetcher<AutosaveResponse<T>>(`/api/autosave?key=${encodeURIComponent(key)}`).then((data) => {
+      if (!ignore && data?.data) {
+        setDraft(data.data)
+        setSavedAt(new Date(data.updatedAt))
+      }
+    })
+    return () => {
+      ignore = true
     }
-  }, [data])
+  }, [key])
 
   useEffect(() => {
     if (!key) return
