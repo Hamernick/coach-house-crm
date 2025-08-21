@@ -1,4 +1,5 @@
 import "./globals.css"
+import "@maily-to/core/style.css"
 import type { Metadata } from "next"
 import { ThemeProvider } from "@/components/theme-provider"
 import { LayoutWrapper } from "@/components/layout-wrapper"
