@@ -1,17 +1,7 @@
 "use client"
 
 import * as React from "react"
-import {
-  IconLayoutDashboard,
-  IconUsers,
-  IconMail,
-  IconTimeline,
-  IconCurrencyDollar,
-  IconReportAnalytics,
-  IconSettings,
-  IconHelp,
-  IconSearch,
-} from "@tabler/icons-react"
+import { IconHelp, IconSearch } from "@tabler/icons-react"
 
 import { NavMain } from "@/components/nav-main"
 import { NavSecondary } from "@/components/nav-secondary"
@@ -24,6 +14,7 @@ import {
   SidebarFooter,
   SidebarHeader,
 } from "@/components/ui/sidebar"
+import { navMain } from "@/lib/routes"
 
 const user = {
   name: "shadcn",
@@ -31,16 +22,6 @@ const user = {
   avatar: "https://github.com/shadcn.png",
   organization: "User Organization",
 }
-
-const navMain = [
-  { title: "Dashboard", url: "/dashboard", icon: IconLayoutDashboard },
-  { title: "Contacts", url: "/contacts", icon: IconUsers },
-  { title: "Marketing", url: "/marketing", icon: IconMail },
-  { title: "Sequences", url: "/sequences", icon: IconTimeline },
-  { title: "Finance", url: "/finance", icon: IconCurrencyDollar },
-  { title: "Reports", url: "/reports", icon: IconReportAnalytics },
-  { title: "Settings", url: "/settings", icon: IconSettings },
-]
 
 export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
   const [helpOpen, setHelpOpen] = React.useState(false)
