@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { requireOrg, jsonError } from "@/lib/api";
-import { db } from "@/lib/store";
+import prisma from "@/lib/prisma";
 
 const saveSchema = z.object({
   key: z.string(),
@@ -16,8 +16,9 @@ export async function GET(req: NextRequest) {
   if (!key) {
     return jsonError(422, "Missing key");
   }
-  const orgStore = db.autosave.get(orgId);
-  const entry = orgStore?.get(key);
+  const entry = await (prisma as any).autosave.findFirst({
+    where: { orgId, key },
+  });
   if (!entry) {
     return jsonError(404, "Not Found");
   }
@@ -32,16 +33,16 @@ export async function POST(req: NextRequest) {
   if (!parsed.success) {
     return jsonError(422, parsed.error.flatten());
   }
-  let orgStore = db.autosave.get(orgId);
-  if (!orgStore) {
-    orgStore = new Map();
-    db.autosave.set(orgId, orgStore);
-  }
-  const entry = {
-    key: parsed.data.key,
-    data: parsed.data.data,
-    updatedAt: new Date().toISOString(),
-  };
-  orgStore.set(parsed.data.key, entry);
+  const entry = await (prisma as any).autosave.upsert({
+    where: { orgId_key: { orgId, key: parsed.data.key } },
+    create: {
+      orgId,
+      key: parsed.data.key,
+      data: parsed.data.data,
+    },
+    update: {
+      data: parsed.data.data,
+    },
+  });
   return NextResponse.json(entry);
 }

@@ -1,28 +1,27 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { NextRequest } from 'next/server'
 import { POST as send } from '@/app/api/campaigns/[id]/send/route'
-import { db, Campaign } from '@/lib/store'
+import prisma, { reset } from '@/lib/prisma'
 import { getSessionOrg } from '@/lib/auth'
 
 vi.mock('@/lib/auth', () => ({ getSessionOrg: vi.fn() }))
 
 beforeEach(() => {
-  db.campaigns.clear()
+  reset()
   vi.mocked(getSessionOrg).mockReset()
 })
 
 describe('campaign schedule guard', () => {
   it('schedules future send as SCHEDULED', async () => {
-    const campaign: Campaign = {
-      id: 'c1',
-      orgId: 'org1',
-      name: 'Camp',
-      contentJson: {},
-      status: 'DRAFT',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    }
-    db.campaigns.set(campaign.id, campaign)
+    await (prisma as any).campaign.create({
+      data: {
+        id: 'c1',
+        orgId: 'org1',
+        name: 'Camp',
+        contentJson: {},
+        status: 'DRAFT',
+      },
+    })
     vi.mocked(getSessionOrg).mockResolvedValue('org1')
 
     const future = new Date(Date.now() + 3600_000).toISOString()
@@ -36,16 +35,15 @@ describe('campaign schedule guard', () => {
   })
 
   it('sends immediately when past date', async () => {
-    const campaign: Campaign = {
-      id: 'c2',
-      orgId: 'org1',
-      name: 'Camp',
-      contentJson: {},
-      status: 'DRAFT',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    }
-    db.campaigns.set(campaign.id, campaign)
+    await (prisma as any).campaign.create({
+      data: {
+        id: 'c2',
+        orgId: 'org1',
+        name: 'Camp',
+        contentJson: {},
+        status: 'DRAFT',
+      },
+    })
     vi.mocked(getSessionOrg).mockResolvedValue('org1')
 
     const past = new Date(Date.now() - 3600_000).toISOString()

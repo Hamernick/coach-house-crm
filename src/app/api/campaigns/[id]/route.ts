@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { requireOrg, jsonError } from "@/lib/api";
-import { db } from "@/lib/store";
+import prisma from "@/lib/prisma";
 
 const updateSchema = z.object({
   name: z.string().optional(),
@@ -17,12 +17,11 @@ export async function GET(
 ) {
   const orgId = await requireOrg(req);
   if (orgId instanceof NextResponse) return orgId;
-  const campaign = db.campaigns.get(params.id);
+  const campaign = await (prisma as any).campaign.findFirst({
+    where: { id: params.id, orgId },
+  });
   if (!campaign) {
     return jsonError(404, "Not Found");
-  }
-  if (campaign.orgId !== orgId) {
-    return jsonError(403, "Forbidden");
   }
   return NextResponse.json({ campaign });
 }
@@ -33,12 +32,11 @@ export async function PATCH(
 ) {
   const orgId = await requireOrg(req);
   if (orgId instanceof NextResponse) return orgId;
-  const campaign = db.campaigns.get(params.id);
+  const campaign = await (prisma as any).campaign.findFirst({
+    where: { id: params.id, orgId },
+  });
   if (!campaign) {
     return jsonError(404, "Not Found");
-  }
-  if (campaign.orgId !== orgId) {
-    return jsonError(403, "Forbidden");
   }
   const body = await req.json().catch(() => null);
   const parsed = updateSchema.safeParse(body);
@@ -47,17 +45,18 @@ export async function PATCH(
   }
   const { segmentId } = parsed.data;
   if (segmentId) {
-    const seg = db.segments.get(segmentId);
+    const seg = await (prisma as any).segment.findFirst({
+      where: { id: segmentId, orgId },
+    });
     if (!seg) {
       return jsonError(422, "Segment not found");
     }
-    if (seg.orgId !== orgId) {
-      return jsonError(403, "Forbidden");
-    }
   }
-  Object.assign(campaign, parsed.data, { updatedAt: new Date().toISOString() });
-  db.campaigns.set(campaign.id, campaign);
-  return NextResponse.json({ campaign });
+  const updated = await (prisma as any).campaign.update({
+    where: { id: params.id, orgId },
+    data: parsed.data,
+  });
+  return NextResponse.json({ campaign: updated });
 }
 
 export async function DELETE(
@@ -66,13 +65,12 @@ export async function DELETE(
 ) {
   const orgId = await requireOrg(req);
   if (orgId instanceof NextResponse) return orgId;
-  const campaign = db.campaigns.get(params.id);
+  const campaign = await (prisma as any).campaign.findFirst({
+    where: { id: params.id, orgId },
+  });
   if (!campaign) {
     return jsonError(404, "Not Found");
   }
-  if (campaign.orgId !== orgId) {
-    return jsonError(403, "Forbidden");
-  }
-  db.campaigns.delete(campaign.id);
+  await (prisma as any).campaign.delete({ where: { id: params.id, orgId } });
   return NextResponse.json({ success: true });
 }

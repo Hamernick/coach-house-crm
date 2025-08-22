@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { randomUUID } from "crypto";
 import { requireOrg, jsonError } from "@/lib/api";
-import { db, Campaign, CampaignStatus } from "@/lib/store";
+import prisma from "@/lib/prisma";
 
 const PAGE_SIZE = 10;
 
@@ -18,15 +17,22 @@ export async function GET(req: NextRequest) {
   if (orgId instanceof NextResponse) return orgId;
   const { searchParams } = new URL(req.url);
   const cursor = searchParams.get("cursor") || undefined;
-  const campaigns = Array.from(db.campaigns.values()).filter(
-    (c) => c.orgId === orgId
-  );
-  campaigns.sort((a, b) => a.createdAt.localeCompare(b.createdAt));
-  const start = cursor ? campaigns.findIndex((c) => c.id === cursor) + 1 : 0;
-  const page = campaigns.slice(start, start + PAGE_SIZE);
-  const nextCursor =
-    start + PAGE_SIZE < campaigns.length ? page[page.length - 1].id : null;
-  return NextResponse.json({ campaigns: page, nextCursor });
+
+  const campaigns = await (prisma as any).campaign.findMany({
+    where: {
+      orgId,
+      ...(cursor ? { createdAt: { gt: cursor } } : {}),
+    },
+    orderBy: { createdAt: "asc" },
+    take: PAGE_SIZE + 1,
+  });
+
+  let nextCursor: string | null = null;
+  if (campaigns.length > PAGE_SIZE) {
+    nextCursor = campaigns[PAGE_SIZE].createdAt;
+    campaigns.length = PAGE_SIZE;
+  }
+  return NextResponse.json({ campaigns, nextCursor });
 }
 
 export async function POST(req: NextRequest) {
@@ -39,27 +45,23 @@ export async function POST(req: NextRequest) {
   }
   const { name, contentJson, segmentId, sendAt } = parsed.data;
   if (segmentId) {
-    const seg = db.segments.get(segmentId);
+    const seg = await (prisma as any).segment.findFirst({
+      where: { id: segmentId, orgId },
+    });
     if (!seg) {
       return jsonError(422, "Segment not found");
     }
-    if (seg.orgId !== orgId) {
-      return jsonError(403, "Forbidden");
-    }
   }
-  const now = new Date().toISOString();
-  const status: CampaignStatus = sendAt ? "SCHEDULED" : "DRAFT";
-  const campaign: Campaign = {
-    id: randomUUID(),
-    orgId,
-    name,
-    contentJson,
-    status,
-    sendAt,
-    segmentId,
-    createdAt: now,
-    updatedAt: now,
-  };
-  db.campaigns.set(campaign.id, campaign);
+  const status = sendAt ? "SCHEDULED" : "DRAFT";
+  const campaign = await (prisma as any).campaign.create({
+    data: {
+      orgId,
+      name,
+      contentJson,
+      segmentId,
+      sendAt,
+      status,
+    },
+  });
   return NextResponse.json({ campaign });
 }
