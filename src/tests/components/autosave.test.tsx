@@ -9,10 +9,8 @@ describe('SegmentEditorDialog autosave', () => {
     const draft: SegmentDraft = {
       id: '1',
       name: '',
-      subtitle: '',
+      description: '',
       category: '',
-      filtersMode: 'any',
-      filters: [],
       members: [],
     }
     const onChange = vi.fn()

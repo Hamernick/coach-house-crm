@@ -13,17 +13,15 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
-import { SegmentFiltersBuilder, SegmentFilter } from './SegmentFiltersBuilder'
+import { SegmentFiltersBuilder } from './SegmentFiltersBuilder'
 import { useAutosave } from '@/hooks/use-autosave'
 import { SegmentMembersTable } from './SegmentMembersTable'
 
 export interface SegmentDraft {
   id: string
   name: string
-  subtitle: string
+  description: string
   category: string
-  filtersMode: 'any' | 'all'
-  filters: SegmentFilter[]
   members: string[]
 }
 
@@ -59,10 +57,8 @@ export function SegmentEditorDialog({
   const empty: SegmentDraft = {
     id: '',
     name: '',
-    subtitle: '',
+    description: '',
     category: '',
-    filtersMode: 'any',
-    filters: [],
     members: [],
   }
   const { draft, setDraft, saving, savedAt } = useAutosave<SegmentDraft>({
@@ -77,7 +73,7 @@ export function SegmentEditorDialog({
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="flex max-h-[90vh] flex-col gap-4">
         <DialogHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between pr-8">
             <DialogTitle>{draft.name || 'New Segment'}</DialogTitle>
             <AutosaveBadge saving={saving} savedAt={savedAt} />
           </div>
@@ -92,23 +88,15 @@ export function SegmentEditorDialog({
               onChange={(e) => setDraft({ ...draft, name: e.target.value })}
             />
             <Input
-              placeholder="Subtitle"
-              value={draft.subtitle}
-              onChange={(e) => setDraft({ ...draft, subtitle: e.target.value })}
+              placeholder="Description"
+              value={draft.description}
+              onChange={(e) => setDraft({ ...draft, description: e.target.value })}
             />
-            <Input
-              placeholder="Category"
+            <SegmentFiltersBuilder
               value={draft.category}
-              onChange={(e) => setDraft({ ...draft, category: e.target.value })}
+              onChange={(v) => setDraft({ ...draft, category: v })}
             />
           </div>
-          <Separator />
-          <SegmentFiltersBuilder
-            value={{ mode: draft.filtersMode, filters: draft.filters }}
-            onChange={(v) =>
-              setDraft({ ...draft, filtersMode: v.mode, filters: v.filters })
-            }
-          />
           <Separator />
           <SegmentMembersTable
             value={draft.members}
@@ -119,7 +107,7 @@ export function SegmentEditorDialog({
           <Button variant="outline" onClick={onClose}>
             Cancel
           </Button>
-          <Button onClick={() => onSave(draft)}>Save Segment</Button>
+          <Button onClick={() => onSave(draft)}>Create Segment</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

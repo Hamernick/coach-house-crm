@@ -1,6 +1,8 @@
 'use client'
 
 import { useState } from 'react'
+import { PlusCircle } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import { SegmentCard } from './SegmentCard'
 import { SegmentEmptyCard } from './SegmentEmptyCard'
 import { SegmentEditorDialog, SegmentDraft } from './SegmentEditorDialog'
@@ -19,41 +21,33 @@ export function SegmentsSection() {
     })
   }
 
+  function createNew() {
+    setEditing({
+      id: Date.now().toString(),
+      name: '',
+      description: '',
+      category: '',
+      members: [],
+    })
+  }
+
   return (
     <section className="space-y-4">
-      <h2 className="text-lg font-semibold">Segments</h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-semibold">Segments</h2>
+        {segments.length > 0 && (
+          <Button onClick={createNew}>
+            <PlusCircle className="mr-2 h-4 w-4" /> Create Segment
+          </Button>
+        )}
+      </div>
       {segments.length === 0 ? (
-        <SegmentEmptyCard
-          onCreate={() =>
-            setEditing({
-              id: Date.now().toString(),
-              name: '',
-              subtitle: '',
-              category: '',
-              filtersMode: 'any',
-              filters: [],
-              members: [],
-            })
-          }
-        />
+        <SegmentEmptyCard onCreate={createNew} />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {segments.map((segment) => (
             <SegmentCard key={segment.id} segment={segment} onEdit={() => setEditing(segment)} />
           ))}
-          <SegmentEmptyCard
-            onCreate={() =>
-              setEditing({
-                id: Date.now().toString(),
-                name: '',
-                subtitle: '',
-                category: '',
-                filtersMode: 'any',
-                filters: [],
-                members: [],
-              })
-            }
-          />
         </div>
       )}
       <SegmentEditorDialog

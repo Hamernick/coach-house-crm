@@ -10,8 +10,8 @@ export default function ContactsPage() {
     <SidebarInset>
       <SiteHeader title="Contacts" />
       <div className="p-4 space-y-8">
-        <ContactsDataTable data={contacts} />
         <SegmentsSection />
+        <ContactsDataTable data={contacts} />
       </div>
     </SidebarInset>
   )

@@ -14,9 +14,9 @@ export function SegmentCard({ segment, onEdit }: SegmentCardProps) {
       <CardHeader>
         <CardTitle className="text-base font-medium">{segment.name || 'Untitled'}</CardTitle>
       </CardHeader>
-      {segment.subtitle && (
+      {segment.description && (
         <CardContent>
-          <p className="text-sm text-muted-foreground">{segment.subtitle}</p>
+          <p className="text-sm text-muted-foreground">{segment.description}</p>
         </CardContent>
       )}
     </Card>
