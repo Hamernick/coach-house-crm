@@ -21,7 +21,7 @@ export function CampaignComposer({ campaignId }: CampaignComposerProps) {
 
   const [title, setTitle] = useState("")
   const [blocks, setBlocks] = useState<EmailBlock[]>([])
-  const [status, setStatus] = useState<"DRAFT" | "SCHEDULED">("DRAFT")
+  const [status, setStatus] = useState<"draft" | "scheduled">("draft")
   const [scheduledAt, setScheduledAt] = useState("")
 
   // load draft or template
@@ -33,7 +33,7 @@ export function CampaignComposer({ campaignId }: CampaignComposerProps) {
         const data = JSON.parse(saved)
         setTitle(data.title || "")
         setBlocks(data.blocks || [])
-        setStatus(data.status || "DRAFT")
+        setStatus(data.status || "draft")
         setScheduledAt(data.scheduledAt || "")
         return
       } catch {}
@@ -83,7 +83,7 @@ export function CampaignComposer({ campaignId }: CampaignComposerProps) {
 
   const handleSchedule = () => {
     if (scheduledAt) {
-      setStatus("SCHEDULED")
+      setStatus("scheduled")
     }
   }
 

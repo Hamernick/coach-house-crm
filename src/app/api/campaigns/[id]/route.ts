@@ -8,7 +8,7 @@ const updateSchema = z.object({
   contentJson: z.any().optional(),
   segmentId: z.string().optional(),
   sendAt: z.string().optional(),
-  status: z.enum(["DRAFT", "SCHEDULED", "SENDING", "SENT"]).optional(),
+  status: z.enum(["draft", "scheduled", "sending", "sent"]).optional(),
 });
 
 export async function GET(

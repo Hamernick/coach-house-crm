@@ -25,7 +25,7 @@ export async function POST(
     return jsonError(422, parsed.error.flatten());
   }
   const sendAt = parsed.data.sendAt || new Date().toISOString();
-  const status = new Date(sendAt) > new Date() ? "SCHEDULED" : "SENT";
+  const status = new Date(sendAt) > new Date() ? "scheduled" : "sent";
   const updated = await (prisma as any).campaign.update({
     where: { id: params.id, orgId },
     data: { sendAt, status },

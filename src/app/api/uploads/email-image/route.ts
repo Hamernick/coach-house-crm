@@ -17,7 +17,10 @@ export async function POST(req: NextRequest) {
   const arrayBuffer = await file.arrayBuffer();
   const buffer = Buffer.from(arrayBuffer);
   const ext = file.name.split(".").pop();
-  const key = `${orgId}/${randomUUID()}${ext ? `.${ext}` : ""}`;
+  const now = new Date();
+  const year = now.getUTCFullYear();
+  const month = String(now.getUTCMonth() + 1).padStart(2, "0");
+  const key = `${orgId}/${year}/${month}/${randomUUID()}${ext ? `.${ext}` : ""}`;
 
   const supabase = createSupabaseServer();
   const bucket = env.SUPABASE_STORAGE_BUCKET;

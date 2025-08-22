@@ -118,9 +118,9 @@ model SegmentMember {
 }
 
 enum CampaignStatus {
-  DRAFT
-  SCHEDULED
-  SENT
+  draft
+  scheduled
+  sent
 }
 
 model Campaign {
@@ -128,8 +128,8 @@ model Campaign {
   orgId       String
   name        String
   contentJson Json
-  status      CampaignStatus @default(DRAFT)
-  sendAt      DateTime?
+  status      CampaignStatus @default(draft)
+  scheduledAt DateTime?
   segmentId   String?
   segment     Segment?       @relation(fields: [segmentId], references: [id])
   org         Org            @relation(fields: [orgId], references: [id])

@@ -10,8 +10,8 @@ serve(async (_req) => {
   const { data: campaigns, error } = await supabase
     .from("campaigns")
     .select("id")
-    .eq("status", "SCHEDULED")
-    .lte("send_at", now);
+    .eq("status", "scheduled")
+    .lte("scheduled_at", now);
 
   if (error) {
     console.error(error);
@@ -25,7 +25,7 @@ serve(async (_req) => {
     const ids = campaigns.map((c: { id: string }) => c.id);
     const { error: updateError } = await supabase
       .from("campaigns")
-      .update({ status: "SENDING", updated_at: now })
+      .update({ status: "sending", updated_at: now })
       .in("id", ids);
     if (updateError) {
       console.error(updateError);
@@ -35,6 +35,8 @@ serve(async (_req) => {
       });
     }
   }
+
+  console.log(`scheduler processed ${campaigns ? campaigns.length : 0} campaigns`);
 
   return new Response(
     JSON.stringify({ updated: campaigns ? campaigns.length : 0 }),

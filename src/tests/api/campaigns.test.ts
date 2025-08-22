@@ -12,14 +12,14 @@ beforeEach(() => {
 })
 
 describe('campaign schedule guard', () => {
-  it('schedules future send as SCHEDULED', async () => {
+  it('schedules future send as scheduled', async () => {
     await (prisma as any).campaign.create({
       data: {
         id: 'c1',
         orgId: 'org1',
         name: 'Camp',
         contentJson: {},
-        status: 'DRAFT',
+        status: 'draft',
       },
     })
     vi.mocked(getSessionOrg).mockResolvedValue('org1')
@@ -31,7 +31,7 @@ describe('campaign schedule guard', () => {
     })
     const res = await send(req, { params: { id: 'c1' } })
     const data = await res.json()
-    expect(data.campaign.status).toBe('SCHEDULED')
+    expect(data.campaign.status).toBe('scheduled')
   })
 
   it('sends immediately when past date', async () => {
@@ -41,7 +41,7 @@ describe('campaign schedule guard', () => {
         orgId: 'org1',
         name: 'Camp',
         contentJson: {},
-        status: 'DRAFT',
+        status: 'draft',
       },
     })
     vi.mocked(getSessionOrg).mockResolvedValue('org1')
@@ -53,6 +53,6 @@ describe('campaign schedule guard', () => {
     })
     const res = await send(req, { params: { id: 'c2' } })
     const data = await res.json()
-    expect(data.campaign.status).toBe('SENT')
+    expect(data.campaign.status).toBe('sent')
   })
 })
