@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { requireOrg, jsonError } from "@/lib/api";
-import { db } from "@/lib/store";
+import prisma from "@/lib/prisma";
 
 const updateSchema = z.object({
   name: z.string().optional(),
@@ -14,12 +14,11 @@ export async function GET(
 ) {
   const orgId = await requireOrg(req);
   if (orgId instanceof NextResponse) return orgId;
-  const segment = db.segments.get(params.id);
+  const segment = await (prisma as any).segment.findFirst({
+    where: { id: params.id, orgId },
+  });
   if (!segment) {
     return jsonError(404, "Not Found");
-  }
-  if (segment.orgId !== orgId) {
-    return jsonError(403, "Forbidden");
   }
   return NextResponse.json({ segment, members: segment.members });
 }
@@ -30,21 +29,22 @@ export async function PATCH(
 ) {
   const orgId = await requireOrg(req);
   if (orgId instanceof NextResponse) return orgId;
-  const segment = db.segments.get(params.id);
+  const segment = await (prisma as any).segment.findFirst({
+    where: { id: params.id, orgId },
+  });
   if (!segment) {
     return jsonError(404, "Not Found");
-  }
-  if (segment.orgId !== orgId) {
-    return jsonError(403, "Forbidden");
   }
   const body = await req.json().catch(() => null);
   const parsed = updateSchema.safeParse(body);
   if (!parsed.success) {
     return jsonError(422, parsed.error.flatten());
   }
-  Object.assign(segment, parsed.data, { updatedAt: new Date().toISOString() });
-  db.segments.set(segment.id, segment);
-  return NextResponse.json({ segment });
+  const updated = await (prisma as any).segment.update({
+    where: { id: params.id, orgId },
+    data: parsed.data,
+  });
+  return NextResponse.json({ segment: updated });
 }
 
 export async function DELETE(
@@ -53,13 +53,12 @@ export async function DELETE(
 ) {
   const orgId = await requireOrg(req);
   if (orgId instanceof NextResponse) return orgId;
-  const segment = db.segments.get(params.id);
+  const segment = await (prisma as any).segment.findFirst({
+    where: { id: params.id, orgId },
+  });
   if (!segment) {
     return jsonError(404, "Not Found");
   }
-  if (segment.orgId !== orgId) {
-    return jsonError(403, "Forbidden");
-  }
-  db.segments.delete(segment.id);
+  await (prisma as any).segment.delete({ where: { id: params.id, orgId } });
   return NextResponse.json({ success: true });
 }

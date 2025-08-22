@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { randomUUID } from "crypto";
 import { requireOrg, jsonError } from "@/lib/api";
-import { db, Sequence, SequenceStep } from "@/lib/store";
+import prisma from "@/lib/prisma";
 
 const PAGE_SIZE = 10;
 
@@ -23,15 +23,22 @@ export async function GET(req: NextRequest) {
   if (orgId instanceof NextResponse) return orgId;
   const { searchParams } = new URL(req.url);
   const cursor = searchParams.get("cursor") || undefined;
-  const sequences = Array.from(db.sequences.values()).filter(
-    (s) => s.orgId === orgId
-  );
-  sequences.sort((a, b) => a.createdAt.localeCompare(b.createdAt));
-  const start = cursor ? sequences.findIndex((s) => s.id === cursor) + 1 : 0;
-  const page = sequences.slice(start, start + PAGE_SIZE);
-  const nextCursor =
-    start + PAGE_SIZE < sequences.length ? page[page.length - 1].id : null;
-  return NextResponse.json({ sequences: page, nextCursor });
+
+  const sequences = await (prisma as any).sequence.findMany({
+    where: {
+      orgId,
+      ...(cursor ? { createdAt: { gt: cursor } } : {}),
+    },
+    orderBy: { createdAt: "asc" },
+    take: PAGE_SIZE + 1,
+  });
+
+  let nextCursor: string | null = null;
+  if (sequences.length > PAGE_SIZE) {
+    nextCursor = sequences[PAGE_SIZE].createdAt;
+    sequences.length = PAGE_SIZE;
+  }
+  return NextResponse.json({ sequences, nextCursor });
 }
 
 export async function POST(req: NextRequest) {
@@ -44,28 +51,21 @@ export async function POST(req: NextRequest) {
   }
   const { name, steps, segmentId } = parsed.data;
   if (segmentId) {
-    const seg = db.segments.get(segmentId);
+    const seg = await (prisma as any).segment.findFirst({
+      where: { id: segmentId, orgId },
+    });
     if (!seg) {
       return jsonError(422, "Segment not found");
     }
-    if (seg.orgId !== orgId) {
-      return jsonError(403, "Forbidden");
-    }
   }
-  const now = new Date().toISOString();
-  const seqSteps: SequenceStep[] = steps.map((s) => ({
-    id: randomUUID(),
-    ...s,
-  }));
-  const sequence: Sequence = {
-    id: randomUUID(),
-    orgId,
-    name,
-    steps: seqSteps,
-    segmentId,
-    createdAt: now,
-    updatedAt: now,
-  };
-  db.sequences.set(sequence.id, sequence);
+  const seqSteps = steps.map((s) => ({ id: randomUUID(), ...s }));
+  const sequence = await (prisma as any).sequence.create({
+    data: {
+      orgId,
+      name,
+      segmentId,
+      steps: seqSteps,
+    },
+  });
   return NextResponse.json({ sequence });
 }

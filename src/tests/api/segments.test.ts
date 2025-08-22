@@ -1,13 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { NextRequest } from 'next/server'
 import { GET, POST } from '@/app/api/segments/route'
-import { db } from '@/lib/store'
+import prisma, { reset } from '@/lib/prisma'
 import { getSessionOrg } from '@/lib/auth'
 
 vi.mock('@/lib/auth', () => ({ getSessionOrg: vi.fn() }))
 
 beforeEach(() => {
-  db.segments.clear()
+  reset()
   vi.mocked(getSessionOrg).mockReset()
 })
 
@@ -30,6 +30,7 @@ describe('segments API', () => {
     expect(res.status).toBe(200)
     const data = await res.json()
     expect(data.segment.name).toBe('Test')
-    expect(db.segments.size).toBe(1)
+    const segments = await (prisma as any).segment.findMany({ where: { orgId: 'org1' } })
+    expect(segments.length).toBe(1)
   })
 })
