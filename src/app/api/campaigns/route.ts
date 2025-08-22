@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
       return jsonError(422, "Segment not found");
     }
   }
-  const status = sendAt ? "SCHEDULED" : "DRAFT";
+  const status = sendAt ? "scheduled" : "draft";
   const campaign = await (prisma as any).campaign.create({
     data: {
       orgId,

@@ -3,7 +3,7 @@ import { z } from "zod"
 export const campaignSchema = z.object({
   id: z.string(),
   name: z.string(),
-  status: z.enum(["DRAFT", "SCHEDULED", "SENDING", "SENT"]),
+  status: z.enum(["draft", "scheduled", "sending", "sent"]),
   scheduledAt: z.string().optional(),
 })
 
@@ -13,12 +13,12 @@ export const campaigns: Campaign[] = [
   {
     id: "1",
     name: "Welcome Series",
-    status: "DRAFT",
+    status: "draft",
   },
   {
     id: "2",
     name: "Spring Fundraiser",
-    status: "SCHEDULED",
+    status: "scheduled",
     scheduledAt: "2025-05-01T09:00",
   },
 ]

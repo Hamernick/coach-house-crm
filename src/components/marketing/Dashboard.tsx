@@ -51,8 +51,8 @@ export function Dashboard() {
   }, [])
 
   const total = campaigns.length
-  const scheduled = campaigns.filter((c) => c.status === 'SCHEDULED').length
-  const sent = campaigns.filter((c) => c.status === 'SENT').length
+  const scheduled = campaigns.filter((c) => c.status === 'scheduled').length
+  const sent = campaigns.filter((c) => c.status === 'sent').length
 
   if (loaded && campaigns.length === 0) {
     return (

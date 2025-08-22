@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient, CookieOptions } from "@supabase/ssr";
 import { env } from "@/lib/env";
-
-const PROTECTED = ["/dashboard","/contacts","/marketing","/sequences","/reports","/apps","/settings"];
+import { protectedPaths } from "@/lib/routes";
 
 export async function middleware(req: NextRequest) {
   let res = NextResponse.next({ request: { headers: new Headers(req.headers) } });
