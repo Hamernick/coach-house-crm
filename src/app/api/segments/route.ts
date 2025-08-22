@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { randomUUID } from "crypto";
 import { requireOrg, jsonError } from "@/lib/api";
-import { db, Segment } from "@/lib/store";
+import prisma from "@/lib/prisma";
 
 const PAGE_SIZE = 10;
 
@@ -12,15 +11,21 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const cursor = searchParams.get("cursor") || undefined;
 
-  const segments = Array.from(db.segments.values()).filter(
-    (s) => s.orgId === orgId
-  );
-  segments.sort((a, b) => a.createdAt.localeCompare(b.createdAt));
-  const start = cursor ? segments.findIndex((s) => s.id === cursor) + 1 : 0;
-  const page = segments.slice(start, start + PAGE_SIZE);
-  const nextCursor =
-    start + PAGE_SIZE < segments.length ? page[page.length - 1].id : null;
-  return NextResponse.json({ segments: page, nextCursor });
+  const segments = await (prisma as any).segment.findMany({
+    where: {
+      orgId,
+      ...(cursor ? { createdAt: { gt: cursor } } : {}),
+    },
+    orderBy: { createdAt: "asc" },
+    take: PAGE_SIZE + 1,
+  });
+
+  let nextCursor: string | null = null;
+  if (segments.length > PAGE_SIZE) {
+    nextCursor = segments[PAGE_SIZE].createdAt;
+    segments.length = PAGE_SIZE;
+  }
+  return NextResponse.json({ segments, nextCursor });
 }
 
 const createSchema = z.object({
@@ -37,16 +42,13 @@ export async function POST(req: NextRequest) {
     return jsonError(422, parsed.error.flatten());
   }
   const { name, dslJson } = parsed.data;
-  const now = new Date().toISOString();
-  const segment: Segment = {
-    id: randomUUID(),
-    orgId,
-    name,
-    dslJson,
-    members: [],
-    createdAt: now,
-    updatedAt: now,
-  };
-  db.segments.set(segment.id, segment);
+  const segment = await (prisma as any).segment.create({
+    data: {
+      orgId,
+      name,
+      dslJson,
+      members: [],
+    },
+  });
   return NextResponse.json({ segment });
 }

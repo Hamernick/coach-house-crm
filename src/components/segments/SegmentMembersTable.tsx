@@ -11,7 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { contacts } from '@/app/contacts/data'
+import { contacts } from '@/app/(crm)/contacts/data'
 
 interface SegmentMembersTableProps {
   value: string[]

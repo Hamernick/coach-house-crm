@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
 import { randomUUID } from "crypto";
-import { getSessionOrg } from "@/lib/auth";
+import { requireOrg, jsonError } from "@/lib/api";
 import { env } from "@/lib/env";
+import { createSupabaseServer } from "@/packages/db";
 
 export async function POST(req: NextRequest) {
   const orgId = await requireOrg(req);
@@ -19,10 +19,7 @@ export async function POST(req: NextRequest) {
   const ext = file.name.split(".").pop();
   const key = `${orgId}/${randomUUID()}${ext ? `.${ext}` : ""}`;
 
-  const supabase = createClient(
-    env.NEXT_PUBLIC_SUPABASE_URL,
-    env.SUPABASE_SERVICE_ROLE_KEY
-  );
+  const supabase = createSupabaseServer();
   const bucket = env.SUPABASE_STORAGE_BUCKET;
 
   const { error } = await supabase.storage

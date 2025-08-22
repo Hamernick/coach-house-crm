@@ -1,28 +1,27 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { NextRequest } from 'next/server'
 import { POST, DELETE } from '@/app/api/segments/[id]/members/route'
-import { db, Segment } from '@/lib/store'
+import prisma, { reset } from '@/lib/prisma'
 import { getSessionOrg } from '@/lib/auth'
 
 vi.mock('@/lib/auth', () => ({ getSessionOrg: vi.fn() }))
 
 beforeEach(() => {
-  db.segments.clear()
+  reset()
   vi.mocked(getSessionOrg).mockReset()
 })
 
 describe('segment members API', () => {
   it('adds and removes members', async () => {
-    const segment: Segment = {
-      id: 's1',
-      orgId: 'org1',
-      name: 'Seg',
-      dslJson: {},
-      members: [],
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    }
-    db.segments.set(segment.id, segment)
+    await (prisma as any).segment.create({
+      data: {
+        id: 's1',
+        orgId: 'org1',
+        name: 'Seg',
+        dslJson: {},
+        members: [],
+      },
+    })
     vi.mocked(getSessionOrg).mockResolvedValue('org1')
 
     const addReq = new NextRequest('http://test.com', {
