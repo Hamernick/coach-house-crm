@@ -29,6 +29,12 @@ model Org {
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
   memberships  Membership[]
+  contacts     Contact[]
+  segments     Segment[]
+  campaigns    Campaign[]
+  sequences    Sequence[]
+
+  @@index([name])
 }
 
 model Membership {
@@ -44,12 +50,114 @@ model Membership {
   @@index([orgId])
 }
 
+enum ContactType {
+  Individual
+  Organization
+  Foundation
+  Government
+  Corporate
+  Other
+}
+
 model Contact {
-  id        String   @id @default(uuid())
-  firstName String
-  lastName  String
-  email     String   @unique
-  createdAt DateTime @default(now())
+  id             String   @id @default(uuid())
+  orgId          String
+  type           ContactType
+  roles          String[] @db.Text[] @default([])
+  honorific      String?
+  firstName      String
+  middleName     String?
+  lastName       String?
+  aliases        String?
+  attribution    String?
+  pronouns       String?
+  jobTitle       String?
+  company        String?
+  primaryEmail   String
+  alternateEmails String[] @db.Text[] @default([])
+  website        String?
+  socialMedia    String?
+  primaryAddress Json?
+  phoneNumbers   String[] @db.Text[] @default([])
+  dateOfBirth    DateTime?
+  documents      Json?
+  mailingLists   String[] @db.Text[] @default([])
+  donations      Json?
+  doNotEmail     Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  org            Org      @relation(fields: [orgId], references: [id])
+  segments       SegmentMember[]
+
+  @@index([orgId, primaryEmail], name: "contact_org_email")
+}
+
+model Segment {
+  id        String          @id @default(uuid())
+  orgId     String
+  name      String
+  dslJson   Json
+  members   SegmentMember[]
+  campaigns Campaign[]
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+  org       Org             @relation(fields: [orgId], references: [id])
+
+  @@index([orgId, name])
+}
+
+model SegmentMember {
+  segmentId String
+  contactId String
+  orgId     String
+  segment   Segment @relation(fields: [segmentId], references: [id])
+  contact   Contact @relation(fields: [contactId], references: [id])
+
+  @@id([segmentId, contactId])
+  @@index([orgId])
+}
+
+enum CampaignStatus {
+  DRAFT
+  SCHEDULED
+  SENT
+}
+
+model Campaign {
+  id          String         @id @default(uuid())
+  orgId       String
+  name        String
+  contentJson Json
+  status      CampaignStatus @default(DRAFT)
+  sendAt      DateTime?
+  segmentId   String?
+  segment     Segment?       @relation(fields: [segmentId], references: [id])
+  org         Org            @relation(fields: [orgId], references: [id])
+
+  @@index([orgId, status])
+}
+
+model Sequence {
+  id        String        @id @default(uuid())
+  orgId     String
+  name      String
+  steps     SequenceStep[]
+  segmentId String?
+  segment   Segment?      @relation(fields: [segmentId], references: [id])
+  org       Org           @relation(fields: [orgId], references: [id])
+
+  @@index([orgId])
+}
+
+model SequenceStep {
+  id         String   @id @default(uuid())
+  sequenceId String
+  delayHours Int
+  contentJson Json
+  order      Int
+  sequence   Sequence @relation(fields: [sequenceId], references: [id])
+
+  @@index([sequenceId, order], name: "step_order")
 }
 
 model EmailTemplate {

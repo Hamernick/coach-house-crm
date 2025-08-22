@@ -3,19 +3,19 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
 async function main() {
+  const org = await prisma.org.create({
+    data: { name: 'Seed Org' },
+  });
+
   const contacts = [
-    { firstName: 'Alice', lastName: 'Johnson', email: 'alice@example.com' },
-    { firstName: 'Bob', lastName: 'Smith', email: 'bob@example.com' },
-    { firstName: 'Carol', lastName: 'Davis', email: 'carol@example.com' }
+    { firstName: 'Alice', lastName: 'Johnson', primaryEmail: 'alice@example.com', type: 'Individual' },
+    { firstName: 'Bob', lastName: 'Smith', primaryEmail: 'bob@example.com', type: 'Individual' },
+    { firstName: 'Carol', lastName: 'Davis', primaryEmail: 'carol@example.com', type: 'Individual' },
   ];
 
-  for (const data of contacts) {
-    await prisma.contact.upsert({
-      where: { email: data.email },
-      update: {},
-      create: data,
-    });
-  }
+  await prisma.contact.createMany({
+    data: contacts.map((c) => ({ ...c, orgId: org.id })),
+  });
 }
 
 main()
