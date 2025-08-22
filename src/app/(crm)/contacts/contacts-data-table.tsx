@@ -371,6 +371,7 @@ export function ContactsDataTable({ data }: ContactsDataTableProps) {
       columnOrder,
     },
     enableRowSelection: true,
+    enableSortingRemoval: false,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
