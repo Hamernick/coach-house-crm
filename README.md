@@ -17,8 +17,11 @@ Create a `.env.local` file in the project root and add the following variables:
 ```env
 NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
-SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-key
+SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-key # optional for local dev
 DATABASE_URL=postgresql-connection-string
+# Optional email configuration
+SMTP_URL=smtp://user:password@smtp.example.com
+EMAIL_FROM=no-reply@example.com
 ```
 
 These variables should also be added to your Vercel project as secrets so they're
